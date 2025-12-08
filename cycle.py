@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 
 def detect_lines_of_width(frame, min_width, max_width):
     """
@@ -65,7 +66,7 @@ def detect_lines_hough(frame, min_width, max_width):
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=50,
                            minLineLength=100, maxLineGap=10)
     
-    result = frame.copy()
+    result = edges.copy()
     
     if lines is not None:
         for line in lines:
@@ -94,7 +95,7 @@ def main():
     
     # Открываем видеопоток с камеры
     # 0 - индекс камеры по умолчанию
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     
     # Проверяем, открылась ли камера
     if not cap.isOpened():
