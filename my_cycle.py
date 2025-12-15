@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import time
 
 
 cap = cv2.VideoCapture(1)
@@ -9,6 +8,7 @@ while True:
     key = cv2.waitKey(1) & 0xFF
 
     ret, frame = cap.read()
+    frame = cv2.flip(frame, -1)
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lower_white = np.array([0, 0, 200])    # Нижний порог
@@ -21,7 +21,7 @@ while True:
     masked = cv2.bitwise_and(frame, frame, mask=mask)
     
     # Применяем размытие для уменьшения шума
-    blurred = cv2.GaussianBlur(gray, (11, 11), 3)
+    blurred = cv2.GaussianBlur(masked, (15, 15), 3)
     
     # Детектор Кэнни для обнаружения границ
     edges = cv2.Canny(blurred, 50, 150)
