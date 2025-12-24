@@ -1,3 +1,27 @@
+import os
+import serial.tools.list_ports
+
+
+def is_linux():
+    system = os.name
+    if system=='nt':
+        return False
+    return True
+
+
+# if is_linux():
+#     ports = None
+# else:
+#     ports = #sorted([port.device for port in serial.tools.list_ports.comports()])
+
+ports = serial.tools.list_ports.comports()
+for port in ports:
+    arduino = serial.Serial(port='COM9', baudrate=9600, timeout=0.1)
+print(ports)
+
+#arduino = serial.Serial(port='COM9', baudrate=9600, timeout=0.1)
+
+
 # import serial
 # import time
 
@@ -29,7 +53,4 @@
 #     value = read_com()
 # print('wheels' in value)
 
-import serial.tools.list_ports
-
-available_ports = sorted([port.device for port in serial.tools.list_ports.comports()])
-print(available_ports)
+#print(available_ports)
