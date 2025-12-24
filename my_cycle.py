@@ -1,12 +1,22 @@
 import cv2
 import numpy as np
+from time import sleep
+from datetime import datetime
+from line_class import *
+
+
 
 
 cap = cv2.VideoCapture(1)
-
+height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+weight = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+print(height, weight)
+flag = True
 while True:
     key = cv2.waitKey(1) & 0xFF
-
+    if key == ord('q'):
+            break
+    
     ret, frame = cap.read()
     frame = cv2.flip(frame, -1)
 
@@ -31,23 +41,36 @@ while True:
     
     result = frame.copy()
 
+    new_lines = []
+
     if lines is not None:
         for line in lines:
-            x1, y1, x2, y2 = line[0]
+            #x1, y1, x2, y2 = line[0]
+            l = Segment(*line[0])
+            exist_flag = False
+            for i, nl in enumerate(new_lines):
+                if sbs(l, nl):
+                    new_lines[i].update(l)
+                    exist_flag = True
+                if exist_flag: break
             
-            # Рассчитываем длину линии
-            length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-            
+            if not(exist_flag):
+                new_lines.append(l)
+
             line_thickness = 2
+    if new_lines is not None:
+        #cv2.line(result, (int(weight*0.4), 0), (int(weight*0.4), int(height)), (0, 255, 0), line_thickness)
+        #cv2.line(result, (int(weight*0.6), 0), (int(weight*0.6), int(height)), (0, 255, 0), line_thickness)
+        for l in new_lines:
+            if l.length>200:# and (weight*0.4 <= l.x1 <= weight*0.6) and (weight*0.4 <= l.x2 <= weight*0.6):
+                cv2.line(result, (l.x1, l.y1), (l.x2, l.y2), (0, 0, 255), line_thickness)
+                print(l.angle, l.length)
 
-            cv2.line(result, (x1, y1), (x2, y2), (0, 0, 255), line_thickness)
-
-    cv2.imshow('edges', edges)
+    # cv2.imshow('edges', edges)
+    # cv2.imshow('masked', masked)
     cv2.imshow('result', result)
-    cv2.imshow('masked', masked)
 
-    if key == ord('q'):
-            break
+    
 
 cap.release()
 cv2.destroyAllWindows()
