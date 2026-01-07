@@ -7,5 +7,3 @@ from settings.settings import Plates
 from connector.arduino_class import *
 
 wheels, manipulator = take_arduinos()
-
-print(wheels, manipulator)
