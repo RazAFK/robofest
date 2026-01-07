@@ -3,10 +3,8 @@ current_dir = os.path.dirname(__file__)
 project_root = os.path.abspath(os.path.join(current_dir, '..'))
 if project_root not in sys.path:sys.path.append(project_root)
 
-from settings.settings import weight, height
-
 class Limits:
-    def __init__(self, sizes=(height, weight), length=(0, 1000), angle=(-90, 90), v_bounds=(0, 1), h_bounds=(0, 1)):
+    def __init__(self, sizes: tuple, length=(0, 1000), angle=(-90, 90), v_bounds=(0, 1), h_bounds=(0, 1)):
         '''
         length = (length_min, length_max)\n
         angle = (angle_min, angle_max)\n
