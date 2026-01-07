@@ -20,7 +20,7 @@ class Comand:
 
 class Arduino:
     def __init__(self, port: str, baudrate=9600, timeout=0.1, connection=None, plate = Plates.undefined):
-        self.port = port if (os.name!='posix' and connection) else '/dev/'+port
+        self.port = port if (os.name!='posix' and not(connection)) else '/dev/'+port
         self.arduino = connection if connection else serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
         self.plate = plate
         time.sleep(2)
