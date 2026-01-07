@@ -1,6 +1,8 @@
 import os, serial, serial.tools.list_ports, time, datetime
 
-#print(os.name)
+system = ''
+if os.name=='posix':
+    system = '/dev/'
 
 plates = ['manipulator', 'wheels']
 
