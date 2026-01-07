@@ -1,6 +1,8 @@
 import os, serial, serial.tools.list_ports, time, datetime
 
-plates = ['main', 'wheels']
+print(os.name)
+
+plates = ['manipulator', 'wheels']
 
 def write_com(arduino):
     arduino.write(b'getPlate#0\n')
@@ -9,7 +11,7 @@ def read_com(arduino):
     data = arduino.readline().decode('utf-8')
     return data
 
-ports = [(port.description, f"{port.vid:04X}" if port.vid else "", f"{port.pid:04X}" if port.pid else "") for port in serial.tools.list_ports.comports()]
+ports = [port.name for port in serial.tools.list_ports.comports()]
 
 print(*ports, sep='\n')
 # with open('arduino_ports.txt', 'w') as file:

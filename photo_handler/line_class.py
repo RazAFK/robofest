@@ -1,5 +1,5 @@
 import numpy as np
-import settings as st
+import settings.settings as st
 from math import ceil, floor
 from datetime import datetime
 

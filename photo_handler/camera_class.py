@@ -1,3 +1,8 @@
+import sys, os
+current_dir = os.path.dirname(__file__)
+project_root = os.path.abspath(os.path.join(current_dir, '..'))
+if project_root not in sys.path:sys.path.append(project_root)
+
 import cv2
 import numpy as np
 from time import sleep
@@ -49,7 +54,7 @@ class Camera:
         new_lines = []
         if lines is not None:
             for line in lines:
-                if limit.depends(line):
+                if limit.contains(line):
                     new_lines.append(line)
         return new_lines
         

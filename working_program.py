@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 from time import sleep
 from datetime import datetime
-from line_class import *
-from camera_class import *
-import settings as st
+from photo_handler.line_class import *
+from photo_handler.camera_class import *
+import settings.settings as st
 
 cam = Camera(1)
 
