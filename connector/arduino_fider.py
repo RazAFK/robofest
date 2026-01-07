@@ -13,7 +13,7 @@ def read_com(arduino):
     data = arduino.readline().decode('utf-8')
     return data
 
-ports = [port.name for port in serial.tools.list_ports.comports()]
+ports = [system+port.name for port in serial.tools.list_ports.comports()]
 
 for port in ports:
     arduino = serial.Serial(port=port, baudrate=9600, timeout=0.1)
