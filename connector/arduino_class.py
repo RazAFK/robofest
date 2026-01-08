@@ -21,11 +21,17 @@ class Comand:
 class Arduino:
     def __init__(self, port: str, baudrate=9600, timeout=0.1, connection=None, plate = Plates.undefined):
         self.port = port
-        if os.name=='posix' and ('/dev/' not in port): self.port = '/dev/'+port
+        if os.name=='posix' and ('/dev/' not in port):
+            self.port = '/dev/'+port
+        if connection:
+            self.arduino = connection
+        else:
+            self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
+            time.sleep(2)
+        
         #self.port = port if os.name!='posix' else '/dev/'+port
-        self.arduino = connection if connection else serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
         self.plate = plate
-        time.sleep(2)
+        
     
     def write_com(self, comand: Comand):
         bite_comand = f'{comand}\n'.encode()
