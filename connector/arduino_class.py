@@ -67,9 +67,14 @@ class Wheels(Arduino):
     class Comands(StrEnum):
         moveForward = 'moveForward'
         moveBackward = 'moveBackward'
+        moveStop = 'moveStop'
     
     def define_plate(self):
         pass
+
+    def move_stop(self):
+        comand = self.convert_comand(self.Comands.moveStop)
+        self.write_com(comand)
 
     def move_forward_time(self, milliseconds):
         comand = self.convert_comand(self.Comands.moveForward, [milliseconds])

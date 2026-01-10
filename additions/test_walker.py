@@ -12,11 +12,21 @@ import queue, threading
 # data_queue.put(item)
 # data_queue.get()
 
+def c_f(s):
+    c, arg = s.split('#')[0], s.split('#')[-1]
+    if c=='moveForward':
+        wheels.move_forward_time(arg)
+    else:
+        wheels.move_stop()
+
 start = datetime.now()
 
 wheels, manipulator = take_arduinos()
 
-wheels.move_forward_time(15000)
+inpt = input()
+while inpt!='stp':
+    c_f(inpt)
+    inpt = input()
 
 end = datetime.now()
 
