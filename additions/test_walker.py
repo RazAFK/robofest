@@ -22,6 +22,8 @@ def c_f(s):
 start = datetime.now()
 
 wheels, manipulator = take_arduinos()
+print(wheels)
+print(manipulator)
 
 inpt = input()
 while inpt!='stp':
