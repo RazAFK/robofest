@@ -23,7 +23,7 @@ class Arduino:
         getPlate = 'getPlate'
 
     def convert_comand(self, name: Comands, args=[]):
-        return name + '#' + '#'.join(args)
+        return name + '#' + '#'.join(list(map(str, args)))
 
     def __init__(self, port: str, baudrate=9600, timeout=0.1, connection=None, plate = Plates.undefined):
         self.port = port
