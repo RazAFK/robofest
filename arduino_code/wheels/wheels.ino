@@ -75,31 +75,45 @@ int index; // индекс разделителя
 char sep = SEPARATOR; // разделитель
 String command; // команда
 int argument; // аргумент(-ы) команды
+unsigned long start_time = millis(); // время начала исполнения команды для таймера
+unsigned long moving_time = millis(); // время движения
+bool move_flag = false;// флаг выполнения команды
 
 void executeCommand(String cmd, int arg) {
   if (cmd == "getPlate") {
-    Serial.println("wheels");
+      Serial.println("wheels");
+  }
+  else if (cmd == "moveStop") {
+    move_flag = false;
+    motor1.Stop();
+    motor2.Stop();
+    motor3.Stop();
+    motor4.Stop();
+    Serial.println("moveDone");
+    //Serial.println("moveSdone");
   }
   else if (cmd == "moveForward") {
+    move_flag = true;
+    start_time = millis();
+    moving_time = arg;
     motor1.moveForward(MOT1_SPEED);
     motor2.moveForward(MOT2_SPEED);
     motor3.moveForward(MOT3_SPEED);
     motor4.moveForward(MOT4_SPEED);
-    delay(arg); // tofo: таймер вместо делэя
-    Serial.println("moveFdone");
+    //delay(arg); // tofo: таймер вместо делэя
+    //Serial.println("moveFdone");
   }
   else if (cmd == "moveBackward") {
+    move_flag = true;
+    start_time = millis();
+    moving_time = arg;
     motor1.moveBackward(MOT1_SPEED);
     motor2.moveBackward(MOT2_SPEED);
     motor3.moveBackward(MOT3_SPEED);
     motor4.moveBackward(MOT4_SPEED);
-    delay(arg);
-    Serial.println("moveBdone");
+    //delay(arg);
+    //Serial.println("moveBdone");
   }
-  motor1.Stop();
-  motor2.Stop();
-  motor3.Stop();
-  motor4.Stop();
 }
 
 void setup() {
@@ -131,13 +145,20 @@ void loop() {
     msg = Serial.readStringUntil('\n');
     index = msg.indexOf(sep);
     command = msg.substring(0, index);
+
     msg.remove(0, index+1);
     argument = msg.toInt();
-
     //Serial.println(command + msg);
 
+    
     executeCommand(command, argument);
   }
   
-  delay(10);
+  if (move_flag == true && millis()-start_time >= moving_time){
+    move_flag = false;
+    executeCommand("moveStop", 0);
+  }  
+
+  
+  //delay(10);
 }
