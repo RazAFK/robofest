@@ -9,6 +9,8 @@ from time import sleep
 from datetime import datetime
 from line_class import *
 from limit_class import *
+import settings.settings as st
+from arduino_code import *
 
 class Camera:
     def __init__(self, id):
@@ -59,9 +61,23 @@ class Camera:
         return new_lines
         
     
-    def drow_lines(self, frame: cv2.Mat, lines: list[Segment], line_thickness=2):
+    def drow_lines(self, frame: cv2.Mat, lines: list[Segment], line_thickness: int = 2):
         if frame is None: return None
         result = frame.copy()
         for l in lines:
             cv2.line(result, (l.x1, l.y1), (l.x2, l.y2), (0, 0, 255), line_thickness)
         return result
+    
+def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=0.9, frame_counter: int = 10):
+    counter = 0
+    processed_lines = []
+    while counter<=frame_counter:
+        frame = cam.get_frame()
+        edges = cam.process_frame_top(frame)
+        lines = cam.get_lines(edges)
+        lines = cam.process_lines(lines, st.central_line_limit)
+        for line in lines:
+            for p_line in processed_lines:
+                if sbs(line, p_line):
+                    
+        processed_lines.append(lines)

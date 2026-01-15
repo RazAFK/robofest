@@ -22,7 +22,7 @@ class Arduino:
     class Comands(StrEnum):
         getPlate = 'getPlate'
 
-    def convert_comand(self, name: Comands, args=[]):
+    def convert_comand(self, name: Comands, *args):
         return name + '#' + '#'.join(list(map(str, args)))
 
     def __init__(self, port: str, baudrate=9600, timeout=0.1, connection=None, plate = Plates.undefined):
@@ -77,11 +77,11 @@ class Wheels(Arduino):
         self.write_com(comand)
 
     def move_forward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveForward, [milliseconds])
+        comand = self.convert_comand(self.Comands.moveForward, milliseconds)
         self.write_com(comand)
 
     def move_backward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveBackward, [milliseconds])
+        comand = self.convert_comand(self.Comands.moveBackward, milliseconds)
         self.write_com(comand)
 
     def move_forward_distance(self, santimetrs):
@@ -104,7 +104,29 @@ class Manipulator(Arduino):
         pass
     
     def reset(self):
-        comand = self.convert_comand(self.Comands.reset, [])
+        comand = self.convert_comand(self.Comands.reset)
+        self.write_com(comand)
+
+    def moveVerRail(self, position):
+        '''
+        Docstring for moveVerRail
+        
+        :param position: Description
+        '''
+        comand = self.convert_comand(self.Comands.moveVerRail, position)
+        self.write_com(comand)
+    
+    def moveHorRail(self, position):
+        '''
+        Docstring for moveHorRail
+        
+        :param position: Description
+        '''
+        comand = self.convert_comand(self.Comands.moveHorRail, position)
+        self.write_com(comand)
+
+    def rotateManipulator(self, position):
+        comand = self.convert_comand(self.Comands.moveHorRail, position)
         self.write_com(comand)
 
 
