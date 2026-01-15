@@ -10,6 +10,9 @@ from enum import StrEnum
 def get_available_ports():
     return [port.name for port in serial.tools.list_ports.comports()]
 
+def constrain(x, start, end):
+    return x if start<=x<=end else start if x<start else end
+
 
 class Plates(StrEnum):
     manipulator = 'manipulator'
@@ -77,11 +80,11 @@ class Wheels(Arduino):
         self.write_com(comand)
 
     def move_forward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveForward, milliseconds)
+        comand = self.convert_comand(self.Comands.moveForward, abs(milliseconds))
         self.write_com(comand)
 
     def move_backward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveBackward, milliseconds)
+        comand = self.convert_comand(self.Comands.moveBackward, abs(milliseconds))
         self.write_com(comand)
 
     def move_forward_distance(self, santimetrs):
@@ -91,6 +94,9 @@ class Wheels(Arduino):
         pass
     
 class Manipulator(Arduino):
+    
+    class Params:
+        grab = {True: 120, False: 0}
 
     class Comands(StrEnum):
         moveVerRail = 'moveVerRail'
@@ -107,26 +113,54 @@ class Manipulator(Arduino):
         comand = self.convert_comand(self.Comands.reset)
         self.write_com(comand)
 
-    def moveVerRail(self, position):
+    def moveVerRail(self, position: int):
         '''
-        Docstring for moveVerRail
-        
-        :param position: Description
+        ^
+        v
+        moving
+
+        :param position: [0; 65]
         '''
-        comand = self.convert_comand(self.Comands.moveVerRail, position)
+        comand = self.convert_comand(self.Comands.moveVerRail, constrain(position, 0, 65))
         self.write_com(comand)
     
-    def moveHorRail(self, position):
+    def moveHorRail(self, position: int):
         '''
-        Docstring for moveHorRail
+        < >
+        moving
         
-        :param position: Description
+        :param position: [0; 65]
         '''
-        comand = self.convert_comand(self.Comands.moveHorRail, position)
+        comand = self.convert_comand(self.Comands.moveHorRail, constrain(position, 0, 65))
         self.write_com(comand)
 
-    def rotateManipulator(self, position):
-        comand = self.convert_comand(self.Comands.moveHorRail, position)
+    def rotateManipulator(self, degrees: int):
+        '''
+        rotating manipulator
+        
+        :param degrees: [0; 180]
+        '''
+        comand = self.convert_comand(self.Comands.rotateManipulator, constrain(degrees, 0, 180))
+        self.write_com(comand)
+
+    def grabManipulator(self, pull: bool):
+        '''
+        True - manipulator pulls hands
+        
+        False - manipulator unpulls hands
+
+        :param degrees: True || False
+        '''
+        comand = self.convert_comand(self.Comands.grabManipulator, self.Params.grab[pull])
+        self.write_com(comand)
+
+    def rotateRail(self, degrees: int):
+        '''
+        rotating rail
+
+        :param degrees: [0; 180]
+        '''
+        comand = self.convert_comand(self.Comands.rotateRail, constrain(degrees, 0, 180))
         self.write_com(comand)
 
 

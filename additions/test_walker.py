@@ -16,7 +16,7 @@ def c_f(s):
     c, arg = s.split('#')[0], s.split('#')[-1]
     if c=='moveForward':
         wheels.move_forward_time(arg)
-    else:
+    elif c=='stop':
         wheels.move_stop()
 
 start = datetime.now()

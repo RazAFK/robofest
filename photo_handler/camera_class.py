@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 from time import sleep
 from datetime import datetime
-from line_class import *
-from limit_class import *
+from photo_handler.line_class import *
+from photo_handler.limit_class import *
 import settings.settings as st
 from arduino_code import *
 
@@ -68,16 +68,36 @@ class Camera:
             cv2.line(result, (l.x1, l.y1), (l.x2, l.y2), (0, 0, 255), line_thickness)
         return result
     
-def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=0.9, frame_counter: int = 10):
-    counter = 0
-    processed_lines = []
-    while counter<=frame_counter:
+def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, frame_counter: int = 10):
+    frame_lines_in_limit = []
+    for _ in range(frame_counter):
         frame = cam.get_frame()
         edges = cam.process_frame_top(frame)
         lines = cam.get_lines(edges)
-        lines = cam.process_lines(lines, st.central_line_limit)
-        for line in lines:
-            for p_line in processed_lines:
-                if sbs(line, p_line):
-                    
-        processed_lines.append(lines)
+        lines = cam.process_lines(lines, limit)
+        frame_lines_in_limit.append(lines)
+    all_segments = [seg for sublist in frame_lines_in_limit for seg in sublist]
+
+    if not all_segments:
+        return None, 0
+    
+    groups = []
+    
+    for seg in all_segments:
+        found = False
+        for i in range(len(groups)):
+            if sbs(seg, groups[i][0]):
+                groups[i][1] += 1
+                found = True
+                break
+        if not found:
+            groups.append([seg, 1])
+
+    best_segment, count = max(groups, key=lambda x: x[1])
+    
+    total_count = len(all_segments)
+    percentage = (count / total_count) * 100
+    
+    return best_segment, percentage
+
+                
