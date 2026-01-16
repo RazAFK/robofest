@@ -16,9 +16,9 @@ def c_f(s):
     c = s.split('#')[0]
     arg = s.split('#')
     if c=='mf':
-        wheels.move_forward_time(arg[0])
+        wheels.move_forward_time(arg[-1])
     elif c=='mb':
-        wheels.move_backward_time(arg[0])
+        wheels.move_backward_time(arg[-1])
     elif c=='st':
         wheels.move_stop()
     elif c=='rt':
