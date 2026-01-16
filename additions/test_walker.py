@@ -14,11 +14,13 @@ import queue, threading
 
 def c_f(s):
     c, arg = s.split('#')[0], s.split('#')[-1]
-    if c=='moveForward':
+    if c=='mf':
         wheels.move_forward_time(arg)
-    elif c=='stop':
+    elif c=='mb':
+        wheels.move_backward_time(arg)
+    elif c=='st':
         wheels.move_stop()
-    elif c=='rotateRail':
+    elif c=='rt':
         manipulator.rotateRail(90)
 
 start = datetime.now()
@@ -28,7 +30,7 @@ print(wheels)
 print(manipulator)
 
 inpt = input()
-while inpt!='stp':
+while inpt!='stop':
     c_f(inpt)
     inpt = input()
 

@@ -16,10 +16,10 @@
 #define PIN_MOT3_SPEED 9
 #define PIN_MOT4_SPEED 10
 // скорости
-#define MOT1_SPEED 51
-#define MOT2_SPEED 174
-#define MOT3_SPEED 60
-#define MOT4_SPEED 200
+#define MOT1_SPEED 170
+#define MOT2_SPEED 160
+#define MOT3_SPEED 130
+#define MOT4_SPEED 130
 
 // todo: скорости для поворота
 
