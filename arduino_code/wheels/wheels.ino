@@ -74,12 +74,12 @@ String msg; // буфер
 int index; // индекс разделителя
 char sep = SEPARATOR; // разделитель
 String command; // команда
-int argument; // аргумент(-ы) команды
+String argument; // аргумент(-ы) команды
 unsigned long start_time = millis(); // время начала исполнения команды для таймера
 unsigned long moving_time = millis(); // время движения
 bool move_flag = false;// флаг выполнения команды
 
-void executeCommand(String cmd, int arg) {
+void executeCommand(String cmd, String arg) {
   if (cmd == "getPlate") {
       Serial.println("wheels");
   }
@@ -92,10 +92,26 @@ void executeCommand(String cmd, int arg) {
     Serial.println("moveDone");
     //Serial.println("moveSdone");
   }
+  else if (cmd == "changeSpeed") {
+    int speeds[4]
+
+    int i = 1;
+    while(index != -1){
+      speeds[i] = arg.substring(0, index).toInt();
+      arg.remove(0, index+1);
+      index = commandStr.indexOf(sep);
+      i++;
+    }
+    motor1.writeSpeed(speeds[0]);
+    motor2.writeSpeed(speeds[1]);
+    motor3.writeSpeed(speeds[2]);
+    motor4.writeSpeed(speeds[3]);
+  }
   else if (cmd == "moveForward") {
+    int iarg = arg.toInt();
     move_flag = true;
     start_time = millis();
-    moving_time = arg;
+    moving_time = iarg;
     motor1.moveForward(MOT1_SPEED);
     motor2.moveForward(MOT2_SPEED);
     motor3.moveForward(MOT3_SPEED);
@@ -104,9 +120,10 @@ void executeCommand(String cmd, int arg) {
     //Serial.println("moveFdone");
   }
   else if (cmd == "moveBackward") {
+    int iarg = arg.toInt();
     move_flag = true;
     start_time = millis();
-    moving_time = arg;
+    moving_time = iarg;
     motor1.moveBackward(MOT1_SPEED);
     motor2.moveBackward(MOT2_SPEED);
     motor3.moveBackward(MOT3_SPEED);
@@ -147,7 +164,9 @@ void loop() {
     command = msg.substring(0, index);
 
     msg.remove(0, index+1);
-    argument = msg.toInt();
+    argument = msg;//.toInt();
+
+    
     //Serial.println(command + msg);
 
     
