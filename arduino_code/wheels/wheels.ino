@@ -16,10 +16,10 @@
 #define PIN_MOT3_SPEED 9
 #define PIN_MOT4_SPEED 10
 // скорости
-#define MOT1_SPEED 170
-#define MOT2_SPEED 160
-#define MOT3_SPEED 130
-#define MOT4_SPEED 130
+#define MOT1_SPEED 150
+#define MOT2_SPEED 150
+#define MOT3_SPEED 150
+#define MOT4_SPEED 150
 
 // todo: скорости для поворота
 
@@ -30,11 +30,14 @@ class yellowMotor {
 
   int pinSpeed;
 
+  int motSpeed;
+
   public:
-  void attach(int plus, int minus, int mspin) {
+  void attach(int plus, int minus, int mspin, int mspeed) {
     pinPlus = plus;
     pinMinus = minus;
     pinSpeed = mspin;
+    motSpeed = mspeed;
   }
 
   // int getSpeed() {
@@ -45,14 +48,18 @@ class yellowMotor {
     analogWrite(pinSpeed, msp);
   }
 
-  void moveForward(int msp) {
-    this->writeSpeed(msp);
+  void resetSpeed(int msp) {
+    motSpeed = msp;
+  }
+
+  void moveForward() {
+    this->writeSpeed(motSpeed);
     digitalWrite(pinPlus, HIGH);
     digitalWrite(pinMinus, LOW);
   }
 
-  void moveBackward(int msp) {
-    this->writeSpeed(msp);
+  void moveBackward() {
+    this->writeSpeed(motSpeed);
     digitalWrite(pinPlus, LOW);
     digitalWrite(pinMinus, HIGH);
   }
@@ -94,7 +101,7 @@ void executeCommand(String cmd, String arg) {
   }
   else if (cmd == "changeSpeed") {
     
-    Serial.println(arg);
+    // Serial.println(arg);
     int speeds[4];
 
     int i = 0;
@@ -107,25 +114,25 @@ void executeCommand(String cmd, String arg) {
     }
     speeds[i] = arg.substring(0, index).toInt();
 
-    motor1.writeSpeed(speeds[0]);
-    motor2.writeSpeed(speeds[1]);
-    motor3.writeSpeed(speeds[2]);
-    motor4.writeSpeed(speeds[3]);
+    motor1.resetSpeed(speeds[0]);
+    motor2.resetSpeed(speeds[1]);
+    motor3.resetSpeed(speeds[2]);
+    motor4.resetSpeed(speeds[3]);
     
-    Serial.println(speeds[0]);
-    Serial.println(speeds[1]);
-    Serial.println(speeds[2]);
-    Serial.println(speeds[3]);
+    // Serial.println(speeds[0]);
+    // Serial.println(speeds[1]);
+    // Serial.println(speeds[2]);
+    // Serial.println(speeds[3]);
   }
   else if (cmd == "moveForward") {
     int iarg = arg.toInt();
     move_flag = true;
     start_time = millis();
     moving_time = iarg;
-    motor1.moveForward(MOT1_SPEED);
-    motor2.moveForward(MOT2_SPEED);
-    motor3.moveForward(MOT3_SPEED);
-    motor4.moveForward(MOT4_SPEED);
+    motor1.moveForward();
+    motor2.moveForward();
+    motor3.moveForward();
+    motor4.moveForward();
     //delay(arg); // tofo: таймер вместо делэя
     
     Serial.println("moveFdone");
@@ -136,10 +143,10 @@ void executeCommand(String cmd, String arg) {
     move_flag = true;
     start_time = millis();
     moving_time = iarg;
-    motor1.moveBackward(MOT1_SPEED);
-    motor2.moveBackward(MOT2_SPEED);
-    motor3.moveBackward(MOT3_SPEED);
-    motor4.moveBackward(MOT4_SPEED);
+    motor1.moveBackward();
+    motor2.moveBackward();
+    motor3.moveBackward();
+    motor4.moveBackward();
     //delay(arg);
     Serial.println("moveBdone");
     Serial.println(iarg);
@@ -163,10 +170,10 @@ void setup() {
   pinMode(PIN_MOT4_PLUS, OUTPUT);
   pinMode(PIN_MOT4_MINUS, OUTPUT);
 
-  motor1.attach(PIN_MOT1_PLUS, PIN_MOT1_MINUS, PIN_MOT1_SPEED);
-  motor2.attach(PIN_MOT2_PLUS, PIN_MOT2_MINUS, PIN_MOT2_SPEED);
-  motor3.attach(PIN_MOT3_PLUS, PIN_MOT3_MINUS, PIN_MOT3_SPEED);
-  motor4.attach(PIN_MOT4_PLUS, PIN_MOT4_MINUS, PIN_MOT4_SPEED);
+  motor1.attach(PIN_MOT1_PLUS, PIN_MOT1_MINUS, PIN_MOT1_SPEED, MOT1_SPEED);
+  motor2.attach(PIN_MOT2_PLUS, PIN_MOT2_MINUS, PIN_MOT2_SPEED, MOT2_SPEED);
+  motor3.attach(PIN_MOT3_PLUS, PIN_MOT3_MINUS, PIN_MOT3_SPEED, MOT3_SPEED);
+  motor4.attach(PIN_MOT4_PLUS, PIN_MOT4_MINUS, PIN_MOT4_SPEED, MOT4_SPEED);
   // везде 1 для подбора
 }
 

@@ -2,7 +2,7 @@
 #include <ServoSmooth.h>
 
 // пины манипулятора
-#define PIN_HORSENS A6 // сенсор горизонтального движения
+#define PIN_HORSENS A5 // сенсор горизонтального движения
 #define PIN_VERSENS A7 // сенсор вертикального движения
 #define PIN_HORMOT_PLUS 7
 #define PIN_HORMOT_MINUS 8
@@ -111,19 +111,22 @@ class railMotor : yellowMotor {
         curPosition--;
       }
     }
-    else if (!isMovingForward && target == 0) {
-      curPosition++;
-    }
     this->Stop();
   }
 
-  void reset () {
-    this->setTarget(-1);
-
+  void reset (int d) {
+    if (d != 0) {
+      this->setTarget(1);
+    }
+    else {
+      this->setTarget(59);
+    }
     while (target != curPosition) {
       this->step();
     }
-
+    this->moveForward();
+    delay(d);
+    this->Stop();
     target = 0;
     curPosition = 0;
   }
@@ -157,9 +160,9 @@ void executeCommand(String cmd, int arg) {
     horMotor.setTarget(arg);
   }
   else if (cmd == "rotateManipulator") {
-    // manRotServo.setTargetDeg(arg);
+    manRotServo.setTargetDeg(arg);
 
-    manRotServo.write(arg);
+    // manRotServo.write(arg);
   }
   else if (cmd == "grabManipulator") {
     manGrabServo.setTargetDeg(arg);
@@ -168,12 +171,12 @@ void executeCommand(String cmd, int arg) {
     railServo.setTargetDeg(arg);
   }
   else if (cmd == "reset") {
-    verMotor.reset();
+    verMotor.reset(250);
     railServo.setTargetDeg(90);
     while (railServo.getCurrentDeg() != 90) {
       railServo.tick();
     }
-    horMotor.reset();
+    horMotor.reset(250);
   }
 }  
  
@@ -188,7 +191,7 @@ void setup()
   pinMode(PIN_VERMOT_PLUS, OUTPUT);
   pinMode(PIN_VERMOT_MINUS, OUTPUT);
   
-  horMotor.attach(PIN_HORMOT_PLUS, PIN_HORMOT_MINUS, PIN_HORSENS, 120, 0, 5);
+  horMotor.attach(PIN_HORMOT_PLUS, PIN_HORMOT_MINUS, PIN_HORSENS, 180, 0, 5);
   verMotor.attach(PIN_VERMOT_PLUS, PIN_VERMOT_MINUS, PIN_VERSENS, 220, 100, 5);
 
   railServo.attach(6, 600, 2400);  // 600 и 2400 - длины импульсов, при которых
@@ -227,6 +230,8 @@ void loop()
     command = msg.substring(0, index);
     msg.remove(0, index+1);
     argument = msg.toInt();
+
+    //Serial.println(command);
 
     executeCommand(command, argument);
   }
