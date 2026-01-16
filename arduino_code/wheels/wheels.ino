@@ -93,13 +93,14 @@ void executeCommand(String cmd, String arg) {
     //Serial.println("moveSdone");
   }
   else if (cmd == "changeSpeed") {
-    int speeds[4]
+    int speeds[4];
 
     int i = 1;
+    index = arg.indexOf(sep);
     while(index != -1){
       speeds[i] = arg.substring(0, index).toInt();
       arg.remove(0, index+1);
-      index = commandStr.indexOf(sep);
+      index = arg.indexOf(sep);
       i++;
     }
     motor1.writeSpeed(speeds[0]);
@@ -175,7 +176,7 @@ void loop() {
   
   if (move_flag == true && millis()-start_time >= moving_time){
     move_flag = false;
-    executeCommand("moveStop", 0);
+    executeCommand("moveStop", "0");
   }  
 
   
