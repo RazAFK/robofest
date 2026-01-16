@@ -18,6 +18,8 @@ def c_f(s):
         wheels.move_forward_time(arg)
     elif c=='stop':
         wheels.move_stop()
+    elif c=='rotateRail':
+        manipulator.rotateRail(90)
 
 start = datetime.now()
 

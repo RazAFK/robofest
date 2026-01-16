@@ -7,6 +7,8 @@ if project_root not in sys.path:sys.path.append(project_root)
 
 from photo_handler.limit_class import Limits
 
+trash_frames = 5
+
 #screen params
 weight, height = 640, 480
 

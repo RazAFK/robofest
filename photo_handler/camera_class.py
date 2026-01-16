@@ -17,12 +17,17 @@ class Camera:
         self.cap = cv2.VideoCapture(id)
         self.height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.weight = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+
     
-    def get_frame(self):
+    def get_frame(self, flip=True):
         ret, frame = self.cap.read()
         if not(ret): return None
-        frame = cv2.flip(frame, -1)
+        if flip:frame = cv2.flip(frame, -1)
         return frame
+    
+    def trash_frames(self):
+        for _ in range(st.trash_frames):
+            self.get_frame(flip=False)
     
     def process_frame_top(self, frame):
         if frame is None: return None
@@ -68,22 +73,23 @@ class Camera:
             cv2.line(result, (l.x1, l.y1), (l.x2, l.y2), (0, 0, 255), line_thickness)
         return result
     
-def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, frame_counter: int = 10):
-    frame_lines_in_limit = []
+def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, frame_counter: int = 15):
+    cam.trash_frames()
+    lines = []
     for _ in range(frame_counter):
         frame = cam.get_frame()
         edges = cam.process_frame_top(frame)
         lines = cam.get_lines(edges)
         lines = cam.process_lines(lines, limit)
-        frame_lines_in_limit.append(lines)
-    all_segments = [seg for sublist in frame_lines_in_limit for seg in sublist]
+        if len(lines)==1:
+            lines.append(lines)
 
-    if not all_segments:
+    if not lines:
         return None, 0
     
-    groups = []
+    groups = []# list[list[Segment, counter]]
     
-    for seg in all_segments:
+    for seg in lines:
         found = False
         for i in range(len(groups)):
             if sbs(seg, groups[i][0]):
@@ -93,11 +99,18 @@ def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, fr
         if not found:
             groups.append([seg, 1])
 
-    best_segment, count = max(groups, key=lambda x: x[1])
+    best_segment, _ = max(groups, key=lambda x: x[1])
     
-    total_count = len(all_segments)
-    percentage = (count / total_count) * 100
-    
-    return best_segment, percentage
+    return best_segment
 
-                
+def define_cam(base_cam: Camera, hand_cam: Camera):
+    frame = base_cam.get_frame()
+    if frame is not None:
+        cv2.imwrite(f'check/base_cam.jpg', frame)
+    frame = hand_cam.get_frame()
+    if frame is not None:
+        cv2.imwrite(f'check/hand_cam.jpg', frame)
+    answ = input()
+    if answ.lower()=='y':
+        return base_cam, hand_cam
+    return hand_cam, base_cam
