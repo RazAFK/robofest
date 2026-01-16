@@ -80,11 +80,11 @@ class Wheels(Arduino):
         self.write_com(comand)
 
     def move_forward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveForward, abs(milliseconds))
+        comand = self.convert_comand(self.Comands.moveForward, milliseconds)
         self.write_com(comand)
 
     def move_backward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveBackward, abs(milliseconds))
+        comand = self.convert_comand(self.Comands.moveBackward, milliseconds)
         self.write_com(comand)
 
     def move_forward_distance(self, santimetrs):
