@@ -93,20 +93,29 @@ void executeCommand(String cmd, String arg) {
     //Serial.println("moveSdone");
   }
   else if (cmd == "changeSpeed") {
+    
+    Serial.println(arg);
     int speeds[4];
 
-    int i = 1;
+    int i = 0;
     index = arg.indexOf(sep);
-    while(index != -1){
+    while(index != -1) {
       speeds[i] = arg.substring(0, index).toInt();
       arg.remove(0, index+1);
       index = arg.indexOf(sep);
       i++;
     }
+    speeds[i] = arg.substring(0, index).toInt();
+
     motor1.writeSpeed(speeds[0]);
     motor2.writeSpeed(speeds[1]);
     motor3.writeSpeed(speeds[2]);
     motor4.writeSpeed(speeds[3]);
+    
+    Serial.println(speeds[0]);
+    Serial.println(speeds[1]);
+    Serial.println(speeds[2]);
+    Serial.println(speeds[3]);
   }
   else if (cmd == "moveForward") {
     int iarg = arg.toInt();
@@ -118,7 +127,9 @@ void executeCommand(String cmd, String arg) {
     motor3.moveForward(MOT3_SPEED);
     motor4.moveForward(MOT4_SPEED);
     //delay(arg); // tofo: таймер вместо делэя
-    //Serial.println("moveFdone");
+    
+    Serial.println("moveFdone");
+    Serial.println(iarg);
   }
   else if (cmd == "moveBackward") {
     int iarg = arg.toInt();
@@ -130,7 +141,8 @@ void executeCommand(String cmd, String arg) {
     motor3.moveBackward(MOT3_SPEED);
     motor4.moveBackward(MOT4_SPEED);
     //delay(arg);
-    //Serial.println("moveBdone");
+    Serial.println("moveBdone");
+    Serial.println(iarg);
   }
 }
 
