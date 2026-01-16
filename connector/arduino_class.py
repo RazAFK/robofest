@@ -71,12 +71,17 @@ class Wheels(Arduino):
         moveForward = 'moveForward'
         moveBackward = 'moveBackward'
         moveStop = 'moveStop'
+        changeSpeed = 'changeSpeed'
     
     def define_plate(self):
         pass
-
+    
     def move_stop(self):
         comand = self.convert_comand(self.Comands.moveStop)
+        self.write_com(comand)
+
+    def changeSpeed(self, s1, s2, s3, s4):
+        comand = self.convert_comand(self.Comands.changeSpeed, s1, s2, s3, s4)
         self.write_com(comand)
 
     def move_forward_time(self, milliseconds):

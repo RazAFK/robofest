@@ -13,15 +13,18 @@ import queue, threading
 # data_queue.get()
 
 def c_f(s):
-    c, arg = s.split('#')[0], s.split('#')[-1]
+    c = s.split('#')[0]
+    arg = s.split('#')
     if c=='mf':
-        wheels.move_forward_time(arg)
+        wheels.move_forward_time(arg[0])
     elif c=='mb':
-        wheels.move_backward_time(arg)
+        wheels.move_backward_time(arg[0])
     elif c=='st':
         wheels.move_stop()
     elif c=='rt':
         manipulator.rotateRail(90)
+    elif c=='chg':
+        wheels.changeSpeed(arg[0], arg[1], arg[2], arg[3])
 
 start = datetime.now()
 
