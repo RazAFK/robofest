@@ -19,12 +19,16 @@ def c_f(s):
         wheels.move_forward_time(arg[-1])
     elif c=='mb':
         wheels.move_backward_time(arg[-1])
+    elif c=='rtr':
+        wheels.roatate_right_time(arg[-1])
+    elif c=='rtl':
+        wheels.roatate_left_time(arg[-1])
     elif c=='st':
         wheels.move_stop()
     elif c=='rt':
         manipulator.rotateRail(90)
     elif c=='chg':
-        wheels.changeSpeed(arg[1], arg[2], arg[3], arg[4])
+        wheels.change_speed(arg[1], arg[2], arg[3], arg[4])
 
 start = datetime.now()
 

@@ -72,6 +72,8 @@ class Wheels(Arduino):
         moveBackward = 'moveBackward'
         moveStop = 'moveStop'
         changeSpeed = 'changeSpeed'
+        rotateRight = 'rotateRight'
+        rotateLeft = 'rotateLeft'
     
     def define_plate(self):
         pass
@@ -80,7 +82,7 @@ class Wheels(Arduino):
         comand = self.convert_comand(self.Comands.moveStop)
         self.write_com(comand)
 
-    def changeSpeed(self, s1, s2, s3, s4):
+    def change_speed(self, s1, s2, s3, s4):
         comand = self.convert_comand(self.Comands.changeSpeed, s1, s2, s3, s4)
         self.write_com(comand)
 
@@ -98,6 +100,20 @@ class Wheels(Arduino):
     def move_backforward_distance(self, santimetrs):
         pass
     
+    def roatate_right_time(self, milliseconds):
+        comand = self.convert_comand(self.Comands.rotateRight, milliseconds)
+        self.write_com(comand)
+
+    def roatate_left_time(self, milliseconds):
+        comand = self.convert_comand(self.Comands.rotateLeft, milliseconds)
+        self.write_com(comand)
+
+    def roatate_right_degrees(self, degrees):
+        pass
+
+    def roatate_left_degrees(self, degrees):
+        pass
+
 class Manipulator(Arduino):
     
     class Params:

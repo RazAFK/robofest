@@ -16,10 +16,10 @@
 #define PIN_MOT3_SPEED 9
 #define PIN_MOT4_SPEED 10
 // скорости
-#define MOT1_SPEED 150
-#define MOT2_SPEED 150
-#define MOT3_SPEED 150
-#define MOT4_SPEED 150
+#define MOT1_SPEED 163
+#define MOT2_SPEED 154
+#define MOT3_SPEED 135
+#define MOT4_SPEED 135
 
 // todo: скорости для поворота
 
@@ -152,6 +152,34 @@ void executeCommand(String cmd, String arg) {
     motor4.moveBackward();
     //delay(arg);
     // Serial.println("moveBdone");
+    // Serial.println(iarg);
+  }
+  else if (cmd == "rotateRight") {
+    int iarg = arg.toInt();
+    move_flag = true;
+    start_time = millis();
+    moving_time = iarg;
+    motor1.moveBackward();
+    motor2.moveBackward();
+    motor3.moveForward();
+    motor4.moveForward();
+    //delay(arg); // tofo: таймер вместо делэя
+    
+    // Serial.println("moveFdone");
+    // Serial.println(iarg);
+  }
+  else if (cmd == "rotateLeft") {
+    int iarg = arg.toInt();
+    move_flag = true;
+    start_time = millis();
+    moving_time = iarg;
+    motor1.moveForward();
+    motor2.moveForward();
+    motor3.moveBackward();
+    motor4.moveBackward();
+    //delay(arg); // tofo: таймер вместо делэя
+    
+    // Serial.println("moveFdone");
     // Serial.println(iarg);
   }
 }
