@@ -40,9 +40,7 @@ class yellowMotor {
     motSpeed = mspeed;
   }
 
-  // int getSpeed() {
-  //   return movementSpeed;
-  // }
+  
 
   void writeSpeed(int msp) {
     analogWrite(pinSpeed, msp);
@@ -50,6 +48,10 @@ class yellowMotor {
 
   void resetSpeed(int msp) {
     motSpeed = msp;
+  }
+
+  int getSpeed() {
+    return motSpeed;
   }
 
   void moveForward() {
@@ -122,7 +124,8 @@ void executeCommand(String cmd, String arg) {
     // Serial.println(speeds[0]);
     // Serial.println(speeds[1]);
     // Serial.println(speeds[2]);
-    // Serial.println(speeds[3]);
+    Serial.println(speeds[3]);
+    Serial.println(motor4.getSpeed());
   }
   else if (cmd == "moveForward") {
     int iarg = arg.toInt();
@@ -135,8 +138,8 @@ void executeCommand(String cmd, String arg) {
     motor4.moveForward();
     //delay(arg); // tofo: таймер вместо делэя
     
-    Serial.println("moveFdone");
-    Serial.println(iarg);
+    // Serial.println("moveFdone");
+    // Serial.println(iarg);
   }
   else if (cmd == "moveBackward") {
     int iarg = arg.toInt();
@@ -148,8 +151,8 @@ void executeCommand(String cmd, String arg) {
     motor3.moveBackward();
     motor4.moveBackward();
     //delay(arg);
-    Serial.println("moveBdone");
-    Serial.println(iarg);
+    // Serial.println("moveBdone");
+    // Serial.println(iarg);
   }
 }
 

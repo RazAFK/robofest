@@ -82,6 +82,7 @@ class Wheels(Arduino):
 
     def changeSpeed(self, s1, s2, s3, s4):
         comand = self.convert_comand(self.Comands.changeSpeed, s1, s2, s3, s4)
+        print('chg comand', comand)
         self.write_com(comand)
 
     def move_forward_time(self, milliseconds):

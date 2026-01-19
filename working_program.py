@@ -16,6 +16,8 @@ base_cam, hand_cam = define_cam(base_cam, hand_cam)
 print(wheels, manipulator, hand_cam, base_cam)
 
 
+
+
 # while True:
 #     key = cv2.waitKey(1) & 0xFF
 #     if key == ord('q'):

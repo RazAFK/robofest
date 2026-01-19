@@ -1,5 +1,5 @@
 import easyocr
-import cv2
+import cv2, os
 import numpy as np
 from sklearn.cluster import KMeans
 from collections import Counter
@@ -10,7 +10,10 @@ vc = cv2.VideoCapture(0, cv2.CAP_DSHOW) #, cv2.CAP_DSHOW cv2.CAP_V4L2 cv2.CAP_FF
 vc.set(cv2.CAP_PROP_FRAME_WIDTH, 640); #1280 1600
 vc.set(cv2.CAP_PROP_FRAME_HEIGHT, 480); #720 1200
 
-reader = easyocr.Reader(['en'], gpu=False)
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(cur_dir, 'model')
+
+reader = easyocr.Reader(['en'], gpu=False, model_storage_directory=model_path)
 
 def classify_color(hsv_color):
     """

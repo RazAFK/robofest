@@ -106,11 +106,11 @@ def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, fr
 def define_cam(base_cam: Camera, hand_cam: Camera):
     frame = base_cam.get_frame()
     if frame is not None:
-        cv2.imwrite(f'check/base_cam.jpg', frame)
+        cv2.imwrite(f'cameras_check/base_cam.jpg', frame)
     frame = hand_cam.get_frame()
     if frame is not None:
-        cv2.imwrite(f'check/hand_cam.jpg', frame)
-    answ = input()
+        cv2.imwrite(f'cameras_check/hand_cam.jpg', frame)
+    answ = input('write Y/n if cams right: ')
     if answ.lower()=='y':
         return base_cam, hand_cam
     return hand_cam, base_cam
