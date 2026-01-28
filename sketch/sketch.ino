@@ -120,7 +120,7 @@ class railMotor : yellowMotor {
           if (millis() - startTime > 1000) {
             // if (target >= 48 /*максимум шагов нужно считать из длины рейки и длины шага*/) 
             
-            target = current;
+            target = curPosition;
             return;
           }
         }
