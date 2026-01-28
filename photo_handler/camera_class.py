@@ -11,23 +11,35 @@ from photo_handler.line_class import *
 from photo_handler.limit_class import *
 import settings.settings as st
 from arduino_code import *
+from enum import StrEnum
+
+class Flip:
+    base = 'base'
+    hand = 'hand'
+    debug = 'debug'
 
 class Camera:
     def __init__(self, id):
-        self.cap = cv2.VideoCapture(id)
+        self.back = cv2.CAP_DSHOW
+        if os.name=='posix':
+            self.back = cv2.CAP_V4L2
+        self.cap = cv2.VideoCapture(id, self.back)
         self.height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.weight = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 
     
-    def get_frame(self, flip=True):
+    def get_frame(self, flip=Flip.base):
         ret, frame = self.cap.read()
         if not(ret): return None
-        if flip:frame = cv2.flip(frame, -1)
+        if flip==Flip.base:
+            frame = cv2.flip(frame, -1)
+        elif flip==Flip.hand:
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         return frame
     
     def trash_frames(self):
         for _ in range(st.trash_frames):
-            self.get_frame(flip=False)
+            self.get_frame(flip=Flip.debug)
     
     def process_frame_top(self, frame):
         if frame is None: return None
@@ -104,10 +116,10 @@ def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, fr
     return best_segment
 
 def define_cam(base_cam: Camera, hand_cam: Camera):
-    frame = base_cam.get_frame()
+    frame = base_cam.get_frame(Flip.base)
     if frame is not None:
         cv2.imwrite(f'cameras_check/base_cam.jpg', frame)
-    frame = hand_cam.get_frame()
+    frame = hand_cam.get_frame(Flip.hand)
     if frame is not None:
         cv2.imwrite(f'cameras_check/hand_cam.jpg', frame)
     answ = input('write Y/n if cams right: ')

@@ -1,5 +1,6 @@
-/photos
+additions/photos
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+photo_handler/model/
