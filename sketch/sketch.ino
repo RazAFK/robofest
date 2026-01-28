@@ -118,8 +118,6 @@ class railMotor : yellowMotor {
           isOpened = analogRead(pinSensor) < 500;
           
           if (millis() - startTime > 1000) {
-            // if (target >= 48 /*максимум шагов нужно считать из длины рейки и длины шага*/) 
-            
             target = curPosition;
             return;
           }
