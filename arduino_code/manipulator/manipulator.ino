@@ -1,5 +1,6 @@
 #include <ServoDriverSmooth.h>
 #include <ServoSmooth.h>
+#include <math.h>
 
 // пины манипулятора
 #define PIN_HORSENS A5 // сенсор горизонтального движения
@@ -62,8 +63,18 @@ class railMotor : yellowMotor {
   bool lastState;
 
   int delta;
+
+  unsigned long startTime; // начало шага
   
   public: 
+  unsigned int getStartTime() {
+    return startTime;
+  }
+
+  void setStartTime() {
+    startTime = millis();
+  }
+  
   void attach(int plus, int minus, int sensor, int msp, int d, int mspin){
     pinPlus = plus;
     pinMinus = minus;
@@ -100,8 +111,18 @@ class railMotor : yellowMotor {
         this->moveBackward();
       }
       
-      while (lastState == isOpened) {
-        isOpened = analogRead(pinSensor) < 500;
+      for (int i = 0; i < 2; i++) {
+        this->setStartTime();
+        
+        while (lastState == isOpened) {
+          isOpened = analogRead(pinSensor) < 500;
+          
+          if (millis() - startTime > 1000) {
+            target = curPosition;
+            return;
+          }
+        }
+        lastState = isOpened;
       }
       
       if (isMovingForward) {
@@ -115,7 +136,7 @@ class railMotor : yellowMotor {
   }
 
   void reset (int d) {
-    if (d != 0) {
+    if (delta != 0) {
       this->setTarget(1);
     }
     else {
@@ -137,7 +158,14 @@ String msg; // буфер
 int index; // индекс разделителя
 char sep = SEPARATOR; // разделитель
 String command; // команда
-int argument; // аргумент(-ы) команды
+int argument1; // аргумент(-ы) команды
+int argument2;
+
+// для движения манипулятора в координатной плоскости
+float railLength = 45; // длина рейки
+int angle0 = 45; // нулевой угол
+int minRadius = 10; // минимальный радиус
+float dstep = 0.745;//длинна шага в сантиметрах
 
 // моторы движения по рейке 
 railMotor horMotor;
@@ -149,34 +177,46 @@ ServoSmooth manRotServo;
 // Servo manRotServo;
 ServoSmooth manGrabServo;
 
-void executeCommand(String cmd, int arg) {
-  if (cmd == "getPlate") {
+void executeCommand(String cmd, int arg1, int arg2) {
+  if (cmd == "getPlate") { // проверка платы
     Serial.println("manipulator");
   }
-  else if (cmd == "moveVerRail") {
-    verMotor.setTarget(arg);
+  else if (cmd == "moveVerRail") { // 
+    verMotor.setTarget(arg1);
   }
-  else if (cmd == "moveHorRail") {
-    horMotor.setTarget(arg);
+  else if (cmd == "moveHorRail") { // движение манипулятора по горизонтальной рейке
+    horMotor.setTarget(arg1);
   }
-  else if (cmd == "rotateManipulator") {
-    manRotServo.setTargetDeg(arg);
+  else if (cmd == "rotateRail") { // повернуть горизонтальную рейку
+    railServo.setTargetDeg(arg1);
+  }
+  else if (cmd == "rotateManipulator") { // повернуть манипулятор
+    manRotServo.setTargetDeg(arg1);
 
     // manRotServo.write(arg);
   }
-  else if (cmd == "grabManipulator") {
-    manGrabServo.setTargetDeg(arg);
+  else if (cmd == "grabManipulator") { // захват манипулятора
+    manGrabServo.setTargetDeg(arg1);
   }
-  else if (cmd == "rotateRail") {
-    railServo.setTargetDeg(arg);
-  }
-  else if (cmd == "reset") {
+  else if (cmd == "reset") { // выставление в 0 для сброса погрешности
     verMotor.reset(250);
     railServo.setTargetDeg(90);
     while (railServo.getCurrentDeg() != 90) {
       railServo.tick();
     }
     horMotor.reset(250);
+    Serial.println("done");
+  }
+  else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
+    Serial.println("start moving");
+    float manipulatorPos = sqrt(pow((railLength) * cos(angle0) - arg1, 2) + pow((railLength) * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
+    int railAngle = (int)round(57.3 * acos(((railLength) * cos(angle0) - arg1)/(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45))); // новый угол рейки
+    Serial.println(String(railAngle));
+    Serial.println(String((manipulatorPos-minRadius)/dstep));
+    horMotor.setTarget((int)round((manipulatorPos-minRadius)/dstep));
+    railServo.setTargetDeg(railAngle);
+    manRotServo.setTargetDeg(180-railAngle);
+    Serial.println("done");
   }
 }  
  
@@ -191,7 +231,7 @@ void setup()
   pinMode(PIN_VERMOT_PLUS, OUTPUT);
   pinMode(PIN_VERMOT_MINUS, OUTPUT);
   
-  horMotor.attach(PIN_HORMOT_PLUS, PIN_HORMOT_MINUS, PIN_HORSENS, 180, 0, 5);
+  horMotor.attach(PIN_HORMOT_PLUS, PIN_HORMOT_MINUS, PIN_HORSENS, 140, 0, 5);
   verMotor.attach(PIN_VERMOT_PLUS, PIN_VERMOT_MINUS, PIN_VERSENS, 220, 100, 5);
 
   railServo.attach(6, 600, 2400);  // 600 и 2400 - длины импульсов, при которых
@@ -200,11 +240,11 @@ void setup()
   // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы
   // manRotServo.attach(PIN_ROTSERVO, 600, 2400);   
   railServo.setSpeed(50);   // ограничить скорость
-  railServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
+  railServo.setAccel(0);    // установить ускорение (разгон и торможение)
 
-  manRotServo.attach(PIN_ROTSERVO);
   manRotServo.setSpeed(50);   // ограничить скорость
   manRotServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
+  manRotServo.attach(PIN_ROTSERVO);
   
   manGrabServo.attach(PIN_GRABSERVO, 600, 2400);
   manGrabServo.setSpeed(50);   // ограничить скорость
@@ -213,6 +253,9 @@ void setup()
   railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
   manRotServo.setAutoDetach(false);
   manGrabServo.setAutoDetach(false);
+
+  railServo.setTargetDeg(90);
+  manRotServo.setTargetDeg(90);
 }
 
 void loop()
@@ -226,14 +269,21 @@ void loop()
 
   if (Serial.available()) {
     msg = Serial.readStringUntil('\n');
+    
     index = msg.indexOf(sep);
     command = msg.substring(0, index);
     msg.remove(0, index+1);
-    argument = msg.toInt();
+//    while(index != -1) {
+//      
+//    }
+    index = msg.indexOf(sep);
+    argument1 = (msg.substring(0, index)).toInt();
+    msg.remove(0, index+1);
+    argument2 = msg.toInt();
 
-    //Serial.println(command);
+    Serial.println(command);
 
-    executeCommand(command, argument);
+    executeCommand(command, argument1, argument2);
   }
   
   delay(10);
