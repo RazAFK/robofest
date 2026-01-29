@@ -1,5 +1,6 @@
 #include <ServoDriverSmooth.h>
 #include <ServoSmooth.h>
+#include <Servo.h>
 #include <math.h>
 
 // пины манипулятора
@@ -119,6 +120,7 @@ class railMotor : yellowMotor {
           
           if (millis() - startTime > 1000) {
             target = curPosition;
+            Serial.println("moveDone");
             return;
           }
         }
@@ -130,6 +132,9 @@ class railMotor : yellowMotor {
       }
       else {
         curPosition--;
+      }
+      if (curPosition == target) {
+        Serial.println("moveDone");
       }
     }
     this->Stop();
@@ -175,7 +180,7 @@ railMotor verMotor;
 ServoSmooth railServo;
 ServoSmooth manRotServo;
 // Servo manRotServo;
-ServoSmooth manGrabServo;
+Servo manGrabServo;
 
 void executeCommand(String cmd, int arg1, int arg2) {
   if (cmd == "getPlate") { // проверка платы
@@ -196,7 +201,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
     // manRotServo.write(arg);
   }
   else if (cmd == "grabManipulator") { // захват манипулятора
-    manGrabServo.setTargetDeg(arg1);
+    manGrabServo.write(arg1);
   }
   else if (cmd == "reset") { // выставление в 0 для сброса погрешности
     verMotor.reset(250);
@@ -209,14 +214,22 @@ void executeCommand(String cmd, int arg1, int arg2) {
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    float manipulatorPos = sqrt(pow((railLength) * cos(angle0) - arg1, 2) + pow((railLength) * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
-    int railAngle = (int)round(57.3 * acos(((railLength) * cos(angle0) - arg1)/(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45))); // новый угол рейки
-    Serial.println(String(railAngle));
-    Serial.println(String((manipulatorPos-minRadius)/dstep));
-    horMotor.setTarget((int)round((manipulatorPos-minRadius)/dstep));
+    int railAngle = (int)round(57.3 * atan((railLength * sin(angle0) - arg2) / (railLength * cos(angle0) - arg1))); // новый угол рейки
+    int manipulatorPos = (int)round(((railLength * cos(angle0) - arg1) / cos(railAngle) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
+    // Serial.println(String(railAngle));
+    // Serial.println(String((manipulatorPos-minRadius)/dstep));
+    horMotor.setTarget(manipulatorPos);
     railServo.setTargetDeg(railAngle);
     manRotServo.setTargetDeg(180-railAngle);
-    Serial.println("done");
+    Serial.println("move done");
+  }
+  else if (cmd == "getCoordinates") {
+    int x1 = (int)round(railLength * cos(angle0) - (horMotor.getCurrent() * dstep + minRadius) * cos(railServo.getCurrentDeg()));
+    int y1 = (int)round(railLength * sin(angle0) - (horMotor.getCurrent() * dstep + minRadius) * sin(railServo.getCurrentDeg()));
+    Serial.println(String(x1) + '#' + String(y1));
+  }
+  else if (cmd == "getCurrent") {
+    Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));
   }
 }  
  
@@ -241,18 +254,17 @@ void setup()
   // manRotServo.attach(PIN_ROTSERVO, 600, 2400);   
   railServo.setSpeed(50);   // ограничить скорость
   railServo.setAccel(0);    // установить ускорение (разгон и торможение)
+  railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
+  manRotServo.attach(PIN_ROTSERVO);
   manRotServo.setSpeed(50);   // ограничить скорость
   manRotServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
-  manRotServo.attach(PIN_ROTSERVO);
-  
-  manGrabServo.attach(PIN_GRABSERVO, 600, 2400);
-  manGrabServo.setSpeed(50);   // ограничить скорость
-  manGrabServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
-  
-  railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
   manRotServo.setAutoDetach(false);
-  manGrabServo.setAutoDetach(false);
+ 
+  manGrabServo.attach(PIN_GRABSERVO);
+  // manGrabServo.setSpeed(50);   // ограничить скорость
+  // manGrabServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
+  // manGrabServo.setAutoDetach(false);
 
   railServo.setTargetDeg(90);
   manRotServo.setTargetDeg(90);
@@ -262,7 +274,7 @@ void loop()
 {
   railServo.tick();
   manRotServo.tick();
-  manGrabServo.tick();
+  //  manGrabServo.tick();
 
   horMotor.step();
   verMotor.step();
@@ -281,7 +293,7 @@ void loop()
     msg.remove(0, index+1);
     argument2 = msg.toInt();
 
-    Serial.println(command);
+    // Serial.println(command);
 
     executeCommand(command, argument1, argument2);
   }

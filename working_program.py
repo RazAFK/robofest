@@ -20,7 +20,6 @@ print(wheels, manipulator)
 
 hand_cam = Camera(st.hand_cam_id)
 
-
 # base_cam = Camera(st.base_cam_id)
 # base_cam, hand_cam = define_cam(base_cam, hand_cam)
 
