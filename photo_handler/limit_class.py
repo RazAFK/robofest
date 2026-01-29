@@ -30,3 +30,8 @@ class Limits:
         h_bounds = (self.v_bounds_min*self.weight<= s.x1 <= self.v_bounds_max*self.weight) and (self.v_bounds_min*self.weight <= s.x2 <= self.v_bounds_max*self.weight)
         v_bounds = (self.h_bounds_min*self.height <= s.y1 <= self.h_bounds_max*self.height) and (self.h_bounds_min*self.height <= s.y2 <= self.h_bounds_max*self.height)
         return length and angle and v_bounds and h_bounds
+    
+    def contains_p(self, p):
+        h_bounds = (self.v_bounds_min*self.weight<= p.x <= self.v_bounds_max*self.weight)
+        v_bounds = (self.h_bounds_min*self.height <= p.y <= self.h_bounds_max*self.height)
+        return v_bounds and h_bounds

@@ -93,7 +93,7 @@ def is_special_color(frame, cnt, color: st.Colors) -> bool:
     #return classify_color(dominant_hsv)
 
 
-def remath_cords(old_abs: tuple[float, float], new_rel: tuple[float, float], old_rel: tuple[float, float]=(st.weight/2, st.height/2), coef: float=st.cam_coef):
+def remath_cords(old_abs: tuple[float, float], new_rel: tuple[float, float], old_rel: tuple[float, float]=(st.weight/2, st.height/2), coef: float=st.cam_coef_sp):
     '''
     old_abs: (x, y) absolute cords\n
     new_rel: (x, y) relative cords\n

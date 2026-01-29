@@ -3,8 +3,9 @@ current_dir = os.path.dirname(__file__)
 project_root = os.path.abspath(os.path.join(current_dir, '..'))
 if project_root not in sys.path:sys.path.append(project_root)
 
+from settings import settings as st
 
-import serial, serial.tools.list_ports, time, datetime
+import serial, serial.tools.list_ports, time, datetime, queue, threading
 from enum import StrEnum
 
 def get_available_ports():
@@ -19,6 +20,14 @@ class Plates(StrEnum):
     wheels = 'wheels'
     undefined = 'undefined'
 
+class Q_obj:
+    def __init__(self, time: datetime.datetime, responce):
+        self.time = time
+        self.responce = responce
+    
+    def __str__(self):
+        return f'{self.time}: {self.responce}'
+    
 
 class Arduino:
 
@@ -38,20 +47,45 @@ class Arduino:
             self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
             time.sleep(1)
         self.plate = plate
+
+        self.data_queue = queue.Queue(maxsize=1)
+
+    def start_thread(self):
+        thread = threading.Thread(target=self._update_loop, daemon=True)
+        thread.start()
     
+    def _update_loop(self):
+        while True:
+            data = self.read_com()
+            if data:
+                if self.data_queue.full():
+                    try: self.data_queue.get_nowait()
+                    except queue.Empty: pass
+                data = Q_obj(datetime.datetime.now(), data)
+                self.data_queue.put(data)
+    
+    def get_data_nowait(self):
+        try: return self.data_queue.get_nowait()
+        except queue.Empty: return None
+
+    def get_data(self, timeout=0.3):
+        try: return self.data_queue.get(timeout=timeout)
+        except queue.Empty: return None
+
     def write_com(self, comand):
         bite_comand = f'{comand}\n'.encode()
         self.arduino.write(bite_comand)
 
     def read_com(self):
-        answer = self.arduino.readline().decode('utf-8')
+        answer = self.arduino.readline().decode('utf-8', errors='ignore')
         return answer
     
     def define_plate(self):
+        self.arduino.reset_input_buffer()
+
         comand = self.convert_comand(self.Comands.getPlate)
         self.write_com(comand)
-        answer = self.read_com()
-
+        answer = str(self.get_data())
         for plate in Plates:
             if plate in answer:
                 self.plate = plate
@@ -127,6 +161,7 @@ class Manipulator(Arduino):
         rotateRail = 'rotateRail'
         reset = 'reset'
         moveManipulator = 'moveManipulator'
+        getCoordinates = 'getCoordinates'
 
     def define_plate(self):
         pass
@@ -134,30 +169,34 @@ class Manipulator(Arduino):
     def reset(self):
         comand = self.convert_comand(self.Comands.reset)
         self.write_com(comand)
-
+    
+    def getCoordinates(self):
+        return self.get_data()
+    
     def moveManipulator(self, x, y):
         comand = self.convert_comand(self.Comands.moveManipulator, x, y)
         self.write_com(comand)
 
+
     def moveVerRail(self, position: int):
-        '''
+        f'''
         ^
         v
         moving
 
-        :param position: [0; 65]
+        :param position: [{st.arduino_ver_step_limit[0]}; {st.arduino_ver_step_limit[-1]}]
         '''
-        comand = self.convert_comand(self.Comands.moveVerRail, constrain(position, 0, 65))
+        comand = self.convert_comand(self.Comands.moveVerRail, constrain(position, st.arduino_ver_step_limit[0], st.arduino_ver_step_limit[-1]), 0)
         self.write_com(comand)
     
     def moveHorRail(self, position: int):
-        '''
+        f'''
         < >
         moving
         
-        :param position: [0; 65]
+        :param position: [{st.arduino_hor_step_limit[0]}; {st.arduino_hor_step_limit[-1]}]
         '''
-        comand = self.convert_comand(self.Comands.moveHorRail, constrain(position, 0, 65))
+        comand = self.convert_comand(self.Comands.moveHorRail, constrain(position, st.arduino_hor_step_limit[0], st.arduino_hor_step_limit[-1]), 0)
         self.write_com(comand)
 
     def rotateManipulator(self, degrees: int):
@@ -166,7 +205,7 @@ class Manipulator(Arduino):
         
         :param degrees: [0; 180]
         '''
-        comand = self.convert_comand(self.Comands.rotateManipulator, constrain(degrees, 0, 180))
+        comand = self.convert_comand(self.Comands.rotateManipulator, constrain(degrees, 0, 180), 0)
         self.write_com(comand)
 
     def grabManipulator(self, pull: bool):
@@ -177,7 +216,7 @@ class Manipulator(Arduino):
 
         :param degrees: True || False
         '''
-        comand = self.convert_comand(self.Comands.grabManipulator, self.Params.grab[pull])
+        comand = self.convert_comand(self.Comands.grabManipulator, self.Params.grab[pull], 0)
         self.write_com(comand)
 
     def rotateRail(self, degrees: int):
@@ -186,7 +225,7 @@ class Manipulator(Arduino):
 
         :param degrees: [0; 180]
         '''
-        comand = self.convert_comand(self.Comands.rotateRail, constrain(degrees, 0, 180))
+        comand = self.convert_comand(self.Comands.rotateRail, constrain(degrees, 0, 180), 0)
         self.write_com(comand)
 
 
@@ -202,6 +241,7 @@ def take_arduinos():
     manipulator, wheels = None, None
 
     for arduino in arduinos:
+        arduino.start_thread()
         if arduino.define_plate()==Plates.wheels:
             wheels = Wheels.from_existing(arduino)
         if arduino.define_plate()==Plates.manipulator:
@@ -214,3 +254,4 @@ def take_arduinos():
                 wheels = Wheels.from_existing(arduino)
     
     return wheels, manipulator
+

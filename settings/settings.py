@@ -13,12 +13,21 @@ trash_frames = 5
 
 #screen params
 weight, height = 640, 480
-cam_coef = 5/160 #santimetrs/pixels
+cam_coef_sp = 5/160 #santimetrs/pixels
+cam_coef_ps = 160/5 #pixels/santimetrs
 
 dp = 7 #delta pixels
 da = 0 #delta degree
 
+#limits
 central_line_limit = Limits((weight, height), length=(200, 1000))
+x_grab_lim = 2.5
+y_grab_lim = 2
+cube_take_limit = Limits((weight, height), v_bounds=(0.5-(cam_coef_ps*x_grab_lim/weight), 0.5+(cam_coef_ps*x_grab_lim/weight)), h_bounds=(0.5-(cam_coef_ps*y_grab_lim/height), 0.5+(cam_coef_ps*y_grab_lim/height)))
+
+arduino_ver_step_limit = [0, 30]
+arduino_hor_step_limit = [0, 47]
+
 
 hand_cam_id = 0
 base_cam_id = 1
