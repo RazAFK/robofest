@@ -1,7 +1,6 @@
 #include <ServoDriverSmooth.h>
 #include <ServoSmooth.h>
 #include <Servo.h>
-#include <math.h>
 
 // пины манипулятора
 #define PIN_HORSENS A5 // сенсор горизонтального движения
@@ -168,7 +167,7 @@ int argument2;
 
 // для движения манипулятора в координатной плоскости
 float railLength = 45; // длина рейки
-int angle0 = 45; // нулевой угол
+int angle0 = 30; // нулевой угол
 int minRadius = 10; // минимальный радиус
 float dstep = 0.745;//длинна шага в сантиметрах
 
@@ -214,18 +213,18 @@ void executeCommand(String cmd, int arg1, int arg2) {
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    int railAngle = (int)round(57.3 * atan((railLength * sin(angle0) - arg2) / (railLength * cos(angle0) - arg1))); // новый угол рейки
-    int manipulatorPos = (int)round(((railLength * cos(angle0) - arg1) / cos(railAngle) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
-    // Serial.println(String(railAngle));
-    // Serial.println(String((manipulatorPos-minRadius)/dstep));
+    int railAngle = (int)round(degrees(atan2((railLength * sin(radians(angle0)) - arg2), (railLength * cos(radians(angle0)) - arg1)))); // новый угол рейки
+    int manipulatorPos = (int)round(((railLength * cos(radians(angle0)) - arg1) / cos(radians(railAngle)) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
+    Serial.println(String(railAngle));
+    Serial.println(String(manipulatorPos));
     horMotor.setTarget(manipulatorPos);
     railServo.setTargetDeg(railAngle);
     manRotServo.setTargetDeg(180-railAngle);
     Serial.println("move done");
   }
   else if (cmd == "getCoordinates") {
-    int x1 = (int)round(railLength * cos(angle0) - (horMotor.getCurrent() * dstep + minRadius) * cos(railServo.getCurrentDeg()));
-    int y1 = (int)round(railLength * sin(angle0) - (horMotor.getCurrent() * dstep + minRadius) * sin(railServo.getCurrentDeg()));
+    int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
+    int y1 = (int)round(railLength * sin(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * sin(radians(railServo.getCurrentDeg())));
     Serial.println(String(x1) + '#' + String(y1));
   }
   else if (cmd == "getCurrent") {
@@ -250,9 +249,8 @@ void setup()
   railServo.attach(6, 600, 2400);  // 600 и 2400 - длины импульсов, при которых
   // серво поворачивается максимально в одну и другую сторону, зависят от самой серво
   // и обычно даже указываются продавцом. Мы их тут указываем для того, чтобы
-  // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы
-  // manRotServo.attach(PIN_ROTSERVO, 600, 2400);   
-  railServo.setSpeed(50);   // ограничить скорость
+  // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы 
+  railServo.setSpeed(40);   // ограничить скорость
   railServo.setAccel(0);    // установить ускорение (разгон и торможение)
   railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
