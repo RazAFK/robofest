@@ -220,7 +220,6 @@ void executeCommand(String cmd, int arg1, int arg2) {
     horMotor.setTarget(manipulatorPos);
     railServo.setTargetDeg(railAngle);
     manRotServo.setTargetDeg(180-railAngle);
-    Serial.println("move done");
   }
   else if (cmd == "getCoordinates") {
     int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
