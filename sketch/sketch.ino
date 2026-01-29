@@ -210,11 +210,12 @@ void executeCommand(String cmd, int arg1, int arg2) {
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
     float manipulatorPos = sqrt(pow((railLength) * cos(angle0) - arg1, 2) + pow((railLength) * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
-    int railAngle = (int)round(57.3 * acos(((railLength) * cos(angle0) - arg1)/manipulatorPos)); // новый угол рейки
+    int railAngle = (int)round(57.3 * acos(((railLength) * cos(angle0) - arg1)/(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45))); // новый угол рейки
     Serial.println(String(railAngle));
     Serial.println(String((manipulatorPos-minRadius)/dstep));
-    horMotor.setTarget((int)((manipulatorPos-minRadius)/dstep));
+    horMotor.setTarget((int)round((manipulatorPos-minRadius)/dstep));
     railServo.setTargetDeg(railAngle);
+    manRotServo.setTargetDeg(180-railAngle);
     Serial.println("done");
   }
 }  
@@ -254,6 +255,7 @@ void setup()
   manGrabServo.setAutoDetach(false);
 
   railServo.setTargetDeg(90);
+  manRotServo.setTargetDeg(90);
 }
 
 void loop()
