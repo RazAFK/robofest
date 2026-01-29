@@ -7,35 +7,96 @@ from datetime import timedelta
 from photo_handler.line_class import *
 from photo_handler.camera_class import *
 #from photo_handler.num_handler import handl_num
-from photo_handler.block_handler import get_center_contour, is_special_color
+from photo_handler.block_handler import get_center_contour, is_special_color, remath_cords
 
 from connector.arduino_class import *
 
 import settings.settings as st
 
 wheels, manipulator = take_arduinos()
+print(wheels, manipulator)
 
 hand_cam = Camera(st.hand_cam_id)
-base_cam = Camera(st.base_cam_id)
-base_cam, hand_cam = define_cam(base_cam, hand_cam)
+# base_cam = Camera(st.base_cam_id)
+# base_cam, hand_cam = define_cam(base_cam, hand_cam)
+
+# manipulator.moveManipulator(0, 0)
+# sleep(2)
+# manipulator.moveManipulator(5, 5)
+# sleep(2)
+# manipulator.moveManipulator(10, 10)
+# sleep(2)
+# manipulator.moveManipulator(0, 10)
+# sleep(2)
+
+manipulator.moveManipulator(20, 0)
+sleep(2)
+
+old_cords = (20, 0)
+
+start_flag = True
+i=1
 
 while True:
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
-            break
+        break
+    if key == ord('f'):
+        manipulator.moveManipulator(0, 0)
+        old_cords = new_cords
+        sleep(2)
     ret, data = get_center_contour(hand_cam)
     if not ret: continue
+
     cX, cY = data[0]
     cnt = data[1]
     result = data[-1].copy()
+    file = data[-1].copy()
     area = cv2.contourArea(cnt)
-    color = is_special_color(result, cnt, st.cube_blue)
-    
+
     cv2.drawContours(result, [cnt], -1, (0, 255, 0), 2)
     cv2.circle(result, (cX, cY), 7, (255, 255, 255), -1)
-    cv2.putText(result, f"Area: {int(area)}, Color: {color}", (cX - 20, cY - 20),
+    cv2.putText(result, f"Area: {int(area)}", (cX - 20, cY - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+    
+
+    if key == ord('s'):
+        cv2.imwrite(f'additions/photos/cubs/{i}.jpg', file)
+        cv2.imwrite(f'additions/photos/cubs/{i}_processed.jpg', result)
+        i+=1
+
+    new_cords = remath_cords(old_cords, (cX, cY))
+    new_cords = (int(new_cords[0]), int(new_cords[-1]))
+
     cv2.imshow('result', result)
+
+    if start_flag or timer.now()-start>=timedelta(seconds=5):
+        start_flag=False
+        print(*new_cords)
+        manipulator.moveManipulator(*new_cords)
+        old_cords = new_cords
+        start = timer.now()
+
+
+
+
+# while True:
+#     key = cv2.waitKey(1) & 0xFF
+#     if key == ord('q'):
+#             break
+#     ret, data = get_center_contour(hand_cam)
+#     if not ret: continue
+#     cX, cY = data[0]
+#     cnt = data[1]
+#     result = data[-1].copy()
+#     area = cv2.contourArea(cnt)
+#     color = is_special_color(result, cnt, st.cube_blue)
+    
+#     cv2.drawContours(result, [cnt], -1, (0, 255, 0), 2)
+#     cv2.circle(result, (cX, cY), 7, (255, 255, 255), -1)
+#     cv2.putText(result, f"Area: {int(area)}, Color: {color}", (cX - 20, cY - 20),
+#                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+#     cv2.imshow('result', result)
 
 #print(wheels, manipulator, hand_cam, base_cam)
 

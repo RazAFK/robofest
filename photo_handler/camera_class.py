@@ -34,6 +34,7 @@ class Camera:
         if flip==Flip.base:
             frame = cv2.flip(frame, -1)
         elif flip==Flip.hand:
+            # frame = cv2.rotate(frame, cv2.ROTATE_180)
             frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         return frame
     

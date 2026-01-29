@@ -61,30 +61,30 @@ cv2.createTrackbar('vi', 'Settings', st.background.lower[-1], 255, nothing)
 cv2.createTrackbar('va', 'Settings', st.background.upper[-1], 255, nothing)
 
 
-# blue = cv2.imread('additions/photos/blue.jpg')
-# red = cv2.imread('additions/photos/red/6.jpg')
-# yellow = cv2.imread('additions/photos/yellow.jpg')
-# white = cv2.imread('additions/photos/white.jpg')
+blue = cv2.imread('additions/photos/blue.jpg')
+red = cv2.imread('additions/photos/red/6.jpg')
+yellow = cv2.imread('additions/photos/yellow.jpg')
+white = cv2.imread('additions/photos/white.jpg')
 
-# frame = white
+frame = white
 
-cam = Camera(0)
+# cam = Camera(0)
 
-frame = cam.get_frame()
+# frame = cam.get_frame()
 
 while True:
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
             break
-    # if key == ord('1'):
-    #     frame = white
-    # if key == ord('2'):
-    #     frame = yellow
-    # if key == ord('3'):
-    #     frame = blue
-    # if key == ord('4'):
-    #     frame = red
+    if key == ord('1'):
+        frame = white
+    if key == ord('2'):
+        frame = yellow
+    if key == ord('3'):
+        frame = blue
+    if key == ord('4'):
+        frame = red
     if key == 13: # Enter
         # Сбрасываем минимумы в 0, максимумы в 255 (или свои значения)
         cv2.setTrackbarPos('hi', 'Settings', st.background.lower[0])
@@ -101,21 +101,43 @@ while True:
     sa = cv2.getTrackbarPos('sa', 'Settings')
     va = cv2.getTrackbarPos('va', 'Settings')
 
-    frame = cam.get_frame()
+    # frame = cam.get_frame()
     
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    mask = cv2.inRange(hsv, np.array([hi, si, vi]), np.array([ha, sa, va]))
-    mask = cv2.bitwise_not(mask)
-    kernel = np.ones((5,5), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    # mask = cv2.inRange(hsv, np.array([hi, si, vi]), np.array([ha, sa, va]))
+    # mask = cv2.bitwise_not(mask)
+    # kernel = np.ones((5,5), np.uint8)
+    # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    
+    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    v_channel = hsv[:, :, 2] 
+
+    blurred = cv2.GaussianBlur(v_channel, (5, 5), 0)
+
+    edged = cv2.Canny(blurred, 30, 100)
+
+    kernel = np.ones((5, 5), np.uint8)
+
+    dilated = cv2.dilate(edged, kernel, iterations=1)
+
+    mask = cv2.morphologyEx(dilated, cv2.MORPH_CLOSE, kernel)
+
+    kernel = np.ones((7,7), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours)==0: continue
     cnt = max(contours, key=cv2.contourArea)
     area = cv2.contourArea(cnt)
     img = frame.copy()
-    M = cv2.moments(cnt)
+
+    hull = cv2.convexHull(cnt)
+    M = cv2.moments(hull)
     if M["m00"] != 0:
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
@@ -132,5 +154,5 @@ while True:
     cv2.imshow('mask', mask)
 
 
-cam.cap.release()
+# cam.cap.release()
 cv2.destroyAllWindows()

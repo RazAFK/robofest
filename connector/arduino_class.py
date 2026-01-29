@@ -126,12 +126,17 @@ class Manipulator(Arduino):
         grabManipulator = 'grabManipulator'
         rotateRail = 'rotateRail'
         reset = 'reset'
+        moveManipulator = 'moveManipulator'
 
     def define_plate(self):
         pass
     
     def reset(self):
         comand = self.convert_comand(self.Comands.reset)
+        self.write_com(comand)
+
+    def moveManipulator(self, x, y):
+        comand = self.convert_comand(self.Comands.moveManipulator, x, y)
         self.write_com(comand)
 
     def moveVerRail(self, position: int):

@@ -70,4 +70,4 @@ cube_blue = Colors(Color.blue, (101, 159), (50, 255), (40, 255))
 cube_yellow = Colors(Color.yellow, (52, 100), (35, 255), (130, 255))
 cube_white = Colors(Color.white, (0, 50), (60, 99), (170, 255))
 
-background = Colors(Color.white, (25, 110), (0, 255), (100, 255))
+background = Colors(Color.white, (25, 179), (0, 32), (100, 255))

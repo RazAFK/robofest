@@ -27,15 +27,29 @@ def get_center_contour(cam: Camera):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
 
-    mask = cv2.inRange(hsv, st.background.lower, st.background.upper)
-    mask = cv2.bitwise_not(mask)
-    kernel = np.ones((5,5), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    v_channel = hsv[:, :, 2]
+
+    blurred = cv2.GaussianBlur(v_channel, (5, 5), 0)
+
+    edged = cv2.Canny(blurred, 30, 100)
+
+    kernel = np.ones((5, 5), np.uint8)
+
+    dilated = cv2.dilate(edged, kernel, iterations=1)
+
+    mask = cv2.morphologyEx(dilated, cv2.MORPH_CLOSE, kernel)
+
+    kernel = np.ones((7,7), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+    if len(contours)==0: return False, None
     cnt = max(contours, key=cv2.contourArea)
-    M = cv2.moments(cnt)
+
+    hull = cv2.convexHull(cnt)
+    M = cv2.moments(hull)
     if M["m00"] != 0:
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
@@ -85,6 +99,6 @@ def remath_cords(old_abs: tuple[float, float], new_rel: tuple[float, float], old
     new_rel: (x, y) relative cords\n
     coef: santimetrs/pixels
     '''
-    xA = abs(old_abs[0] - (coef*abs(old_rel[0]-new_rel[0])))
-    yA = abs(old_abs[-1] - (coef*abs(old_rel[-1]-new_rel[-1])))
+    xA = abs(old_abs[0] + (coef*(old_rel[0]-new_rel[0])))
+    yA = abs(old_abs[-1] + (coef*(old_rel[-1]-new_rel[-1])))
     return (xA, yA)
