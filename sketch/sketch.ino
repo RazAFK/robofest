@@ -1,5 +1,6 @@
 #include <ServoDriverSmooth.h>
 #include <ServoSmooth.h>
+#include <Servo.h>
 #include <math.h>
 
 // пины манипулятора
@@ -175,7 +176,7 @@ railMotor verMotor;
 ServoSmooth railServo;
 ServoSmooth manRotServo;
 // Servo manRotServo;
-ServoSmooth manGrabServo;
+Servo manGrabServo;
 
 void executeCommand(String cmd, int arg1, int arg2) {
   if (cmd == "getPlate") { // проверка платы
@@ -196,7 +197,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
     // manRotServo.write(arg);
   }
   else if (cmd == "grabManipulator") { // захват манипулятора
-    manGrabServo.setTargetDeg(arg1);
+    manGrabServo.write(arg1);
   }
   else if (cmd == "reset") { // выставление в 0 для сброса погрешности
     verMotor.reset(250);
@@ -245,18 +246,17 @@ void setup()
   // manRotServo.attach(PIN_ROTSERVO, 600, 2400);   
   railServo.setSpeed(50);   // ограничить скорость
   railServo.setAccel(0);    // установить ускорение (разгон и торможение)
+  railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
+  manRotServo.attach(PIN_ROTSERVO);
   manRotServo.setSpeed(50);   // ограничить скорость
   manRotServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
-  manRotServo.attach(PIN_ROTSERVO);
-  
-  manGrabServo.attach(PIN_GRABSERVO, 600, 2400);
-  manGrabServo.setSpeed(50);   // ограничить скорость
-  manGrabServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
-  
-  railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
   manRotServo.setAutoDetach(false);
-  manGrabServo.setAutoDetach(false);
+ 
+  manGrabServo.attach(PIN_GRABSERVO);
+  // manGrabServo.setSpeed(50);   // ограничить скорость
+  // manGrabServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
+  // manGrabServo.setAutoDetach(false);
 
   railServo.setTargetDeg(90);
   manRotServo.setTargetDeg(90);
@@ -266,7 +266,7 @@ void loop()
 {
   railServo.tick();
   manRotServo.tick();
-  manGrabServo.tick();
+  //  manGrabServo.tick();
 
   horMotor.step();
   verMotor.step();
