@@ -211,12 +211,16 @@ void executeCommand(String cmd, int arg1, int arg2) {
     Serial.println("start moving");
     float manipulatorPos = sqrt(pow((railLength) * cos(angle0) - arg1, 2) + pow((railLength) * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
     int railAngle = (int)round(57.3 * acos(((railLength) * cos(angle0) - arg1)/(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45))); // новый угол рейки
-    Serial.println(String(railAngle));
-    Serial.println(String((manipulatorPos-minRadius)/dstep));
+    int x1 = railLength * cos(angle0)-(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45)*cos(railAngle);
+    int y1 = railLength * sin(angle0)-(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45)*sin(railAngle);
+    Serial.println(String(x1));
+    Serial.println(String(y1));
+    // Serial.println(String(railAngle));
+    // Serial.println(String((manipulatorPos-minRadius)/dstep));
     horMotor.setTarget((int)round((manipulatorPos-minRadius)/dstep));
     railServo.setTargetDeg(railAngle);
     manRotServo.setTargetDeg(180-railAngle);
-    Serial.println("done");
+    Serial.println("move done");
   }
 }  
  
