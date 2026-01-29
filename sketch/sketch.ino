@@ -120,6 +120,7 @@ class railMotor : yellowMotor {
           
           if (millis() - startTime > 1000) {
             target = curPosition;
+            Serial.println("moveDone");
             return;
           }
         }
@@ -131,6 +132,9 @@ class railMotor : yellowMotor {
       }
       else {
         curPosition--;
+      }
+      if (curPosition == target) {
+        Serial.println("moveDone");
       }
     }
     this->Stop();
@@ -210,11 +214,11 @@ void executeCommand(String cmd, int arg1, int arg2) {
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    float manipulatorPos = sqrt(pow(railLength * cos(angle0) - arg1, 2) + pow(railLength * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
-    int railAngle = (int)round(57.3 * acos((railLength * cos(angle0) - arg1)/manipulatorPos)); // новый угол рейки
+    int railAngle = (int)round(57.3 * atan((railLength * sin(angle0) - arg2) / (railLength * cos(angle0) - arg1))); // новый угол рейки
+    int manipulatorPos = (int)round(((railLength * cos(angle0) - arg1) / cos(railAngle) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
     // Serial.println(String(railAngle));
     // Serial.println(String((manipulatorPos-minRadius)/dstep));
-    horMotor.setTarget((int)round((manipulatorPos-minRadius)/dstep));
+    horMotor.setTarget(manipulatorPos);
     railServo.setTargetDeg(railAngle);
     manRotServo.setTargetDeg(180-railAngle);
     Serial.println("move done");
