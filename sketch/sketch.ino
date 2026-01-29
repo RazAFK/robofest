@@ -210,8 +210,8 @@ void executeCommand(String cmd, int arg1, int arg2) {
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    float manipulatorPos = sqrt(pow((railLength) * cos(angle0) - arg1, 2) + pow((railLength) * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
-    int railAngle = (int)round(57.3 * acos(((railLength) * cos(angle0) - arg1)/(minRadius+round((manipulatorPos - minRadius) / dstep) * 7.45))); // новый угол рейки
+    float manipulatorPos = sqrt(pow(railLength * cos(angle0) - arg1, 2) + pow(railLength * sin(angle0) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
+    int railAngle = (int)round(57.3 * acos((railLength * cos(angle0) - arg1)/manipulatorPos)); // новый угол рейки
     // Serial.println(String(railAngle));
     // Serial.println(String((manipulatorPos-minRadius)/dstep));
     horMotor.setTarget((int)round((manipulatorPos-minRadius)/dstep));
@@ -220,9 +220,12 @@ void executeCommand(String cmd, int arg1, int arg2) {
     Serial.println("move done");
   }
   else if (cmd == "getCoordinates") {
-    int x1 = railLength * cos(angle0) - (minRadius + round((horMotor.getCurrent() - minRadius) / dstep) * 7.45) * cos(railServo.getCurrent());
-    int y1 = railLength * sin(angle0) - (minRadius + round((horMotor.getCurrent() - minRadius) / dstep) * 7.45) * sin(railServo.getCurrent());
+    int x1 = (int)round(railLength * cos(angle0) - (horMotor.getCurrent() * dstep + minRadius) * cos(railServo.getCurrentDeg()));
+    int y1 = (int)round(railLength * sin(angle0) - (horMotor.getCurrent() * dstep + minRadius) * sin(railServo.getCurrentDeg()));
     Serial.println(String(x1) + '#' + String(y1));
+  }
+  else if (cmd == "getCurrent") {
+    Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));
   }
 }  
  
@@ -286,7 +289,7 @@ void loop()
     msg.remove(0, index+1);
     argument2 = msg.toInt();
 
-    Serial.println(command);
+    // Serial.println(command);
 
     executeCommand(command, argument1, argument2);
   }
