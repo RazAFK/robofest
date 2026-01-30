@@ -4,6 +4,7 @@ project_root = os.path.abspath(os.path.join(current_dir, '..'))
 if project_root not in sys.path:sys.path.append(project_root)
 
 from settings import settings as st
+from photo_handler.line_class import Point
 
 import serial, serial.tools.list_ports, time, datetime, queue, threading
 from enum import StrEnum
@@ -171,7 +172,10 @@ class Manipulator(Arduino):
         self.write_com(comand)
     
     def getCoordinates(self):
-        return self.get_data()
+        data = self.get_data(timeout=0.5)
+        if data is not None:
+            return Point(*list(map(int, data.responce.split('#'))))
+        return data
     
     def moveManipulator(self, x, y):
         comand = self.convert_comand(self.Comands.moveManipulator, x, y)

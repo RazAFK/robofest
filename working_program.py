@@ -23,6 +23,103 @@ hand_cam = Camera(st.hand_cam_id)
 # base_cam = Camera(st.base_cam_id)
 # base_cam, hand_cam = define_cam(base_cam, hand_cam)
 
+manipulator.moveManipulator(0, 0)
+old_cords = Point(0, 0)
+
+
+if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+    old_cords = manipulator.getCoordinates()
+
+start_flag = True
+finding_flag = False
+i=1
+#platform 9
+#floor 16
+while True:
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
+        break
+    elif key == ord('e'):
+        finding_flag = not(finding_flag)
+        print('finding_flag:', finding_flag)
+
+    elif key == ord('z'):
+        manipulator.moveVerRail(16)
+    
+    elif key == ord('c'):
+        manipulator.moveVerRail(9)
+    
+    elif key == ord('b'):
+        manipulator.grabManipulator(0)
+
+    elif key == ord('m'):
+        manipulator.grabManipulator(120)
+
+    elif key == ord('1'):
+        manipulator.moveManipulator(0, 0)
+        old_cords = manipulator.getCoordinates()
+    elif key == ord('2'):
+        manipulator.moveManipulator(10, 0)
+        old_cords = manipulator.getCoordinates()
+    elif key == ord('3'):
+        manipulator.moveManipulator(20, 0)
+        old_cords = manipulator.getCoordinates()
+    elif key == ord('4'):
+        manipulator.moveManipulator(30, 0)
+        old_cords = manipulator.getCoordinates()
+    elif key == ord('5'):
+        manipulator.moveManipulator(40, 0)
+        old_cords = manipulator.getCoordinates()
+    elif key == ord('6'):
+        manipulator.moveManipulator(50, 0)
+        old_cords = manipulator.getCoordinates()
+    elif key == ord('7'):
+        manipulator.moveManipulator(60, 0)
+        old_cords = manipulator.getCoordinates()
+
+
+    ret, data = get_center_contour(hand_cam)
+    if not ret: continue
+
+    new_cords = (old_cords.x, old_cords.y)
+
+    if finding_flag:
+        cX, cY = data[0]
+        cnt = data[1]
+        result = data[-1].copy()
+        file = data[-1].copy()
+        area = cv2.contourArea(cnt)
+        
+        cv2.drawContours(result, [cnt], -1, (0, 255, 0), 2)
+        cv2.circle(result, (cX, cY), 7, (255, 255, 255), -1)
+        cv2.putText(result, f"Area: {int(area)}", (cX - 20, cY - 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        
+        cv2.imshow('result', result)
+
+        new_cords = remath_cords((old_cords.x, old_cords.y), (cX, cY))
+        new_cords = (int(new_cords[0]), int(new_cords[-1]))
+        if not st.cube_take_limit.contains_p(Point(*new_cords)): continue
+
+    if key == ord('s'):
+        cv2.imwrite(f'additions/photos/cubs/{i}.jpg', file)
+        cv2.imwrite(f'additions/photos/cubs/{i}_processed.jpg', result)
+        i+=1
+    
+
+    if start_flag or timer.now()-start>=timedelta(seconds=3):
+        if old_cords.x==new_cords[0] and old_cords.y==new_cords[-1]: continue
+        start_flag=False
+        print(new_cords)
+        manipulator.moveManipulator(*new_cords)
+        old_cords = manipulator.getCoordinates()
+        start = timer.now()
+
+
+
+
+
+
 # manipulator.moveManipulator(0, 0)
 # sleep(2)
 # manipulator.moveManipulator(5, 5)
