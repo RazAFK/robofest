@@ -27,6 +27,8 @@ cube_take_limit = Limits((weight, height), v_bounds=(0.5-(cam_coef_ps*x_grab_lim
 
 arduino_ver_step_limit = [0, 30]
 arduino_hor_step_limit = [0, 47]
+open_limit = 120
+close_limit = 0
 
 
 hand_cam_id = 0

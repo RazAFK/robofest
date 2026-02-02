@@ -152,7 +152,7 @@ class Wheels(Arduino):
 class Manipulator(Arduino):
     
     class Params:
-        grab = {True: 120, False: 0}
+        grab = {True: st.open_limit, False: st.close_limit}
 
     class Comands(StrEnum):
         moveVerRail = 'moveVerRail'

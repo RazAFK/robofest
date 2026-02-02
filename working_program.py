@@ -30,12 +30,16 @@ old_cords = Point(0, 0)
 if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
     old_cords = manipulator.getCoordinates()
 
+print(old_cords)
+
 start_flag = True
 finding_flag = False
 i=1
 #platform 9
 #floor 16
 while True:
+    frame = hand_cam.get_frame(flip=Flip.hand)
+    cv2.imshow('frame', frame)
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
@@ -43,40 +47,60 @@ while True:
         finding_flag = not(finding_flag)
         print('finding_flag:', finding_flag)
 
+    
+    elif key == ord('r'):
+        manipulator.reset()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
+
     elif key == ord('z'):
         manipulator.moveVerRail(16)
     
-    elif key == ord('c'):
+    elif key == ord('x'):
         manipulator.moveVerRail(9)
     
+    elif key == ord('c'):
+        manipulator.moveVerRail(-100)
+    
     elif key == ord('b'):
-        manipulator.grabManipulator(0)
+        manipulator.grabManipulator(False)
 
     elif key == ord('m'):
-        manipulator.grabManipulator(120)
+        manipulator.grabManipulator(True)
 
     elif key == ord('1'):
         manipulator.moveManipulator(0, 0)
-        old_cords = manipulator.getCoordinates()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
     elif key == ord('2'):
         manipulator.moveManipulator(10, 0)
-        old_cords = manipulator.getCoordinates()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
     elif key == ord('3'):
         manipulator.moveManipulator(20, 0)
-        old_cords = manipulator.getCoordinates()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
     elif key == ord('4'):
         manipulator.moveManipulator(30, 0)
-        old_cords = manipulator.getCoordinates()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
     elif key == ord('5'):
         manipulator.moveManipulator(40, 0)
-        old_cords = manipulator.getCoordinates()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
     elif key == ord('6'):
         manipulator.moveManipulator(50, 0)
-        old_cords = manipulator.getCoordinates()
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
     elif key == ord('7'):
         manipulator.moveManipulator(60, 0)
-        old_cords = manipulator.getCoordinates()
-
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()
+    elif key == ord('8'):
+        manipulator.moveManipulator(35, 30)
+        if 'moveDone' in  str(manipulator.get_data(timeout=0.5)):
+            old_cords = manipulator.getCoordinates()    
+    print(old_cords)
 
     ret, data = get_center_contour(hand_cam)
     if not ret: continue
