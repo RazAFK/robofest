@@ -227,7 +227,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
   else if (cmd == "getCoordinates") {
     int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
     int y1 = (int)round(railLength * sin(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * sin(radians(railServo.getCurrentDeg())));
-    Serial.println("data#" + String(x1) + '#' + String(y1));
+    Serial.println("data#cords#" + String(x1) + '#' + String(y1));
   }
   else if (cmd == "getCurrent") {
     Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));
