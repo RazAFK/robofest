@@ -122,9 +122,9 @@ class railMotor : yellowMotor {
               curPosition = 0;
             }
             else {
-              
+              curPosition = 47;
             }
-            Serial.println("/moveDone");
+            Serial.println("data#moveDone");
             return;
           }
         }
@@ -138,7 +138,7 @@ class railMotor : yellowMotor {
         curPosition--;
       }
       if (curPosition == target) {
-        Serial.println("/moveDone");
+        Serial.println("data#moveDone");
       }
     }
     this->Stop();
@@ -186,7 +186,7 @@ Servo manGrabServo;
 
 void executeCommand(String cmd, int arg1, int arg2) {
   if (cmd == "getPlate") { // проверка платы
-    Serial.println("/manipulator");
+    Serial.println("data#manipulator");
   }
   else if (cmd == "moveVerRail") { // 
     verMotor.setTarget(arg1);
@@ -212,7 +212,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
       railServo.tick();
     }
     horMotor.reset();
-    Serial.println("/moveDone");
+    Serial.println("data#resetDone");
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
@@ -227,7 +227,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
   else if (cmd == "getCoordinates") {
     int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
     int y1 = (int)round(railLength * sin(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * sin(radians(railServo.getCurrentDeg())));
-    Serial.println("/" + String(x1) + '#' + String(y1));
+    Serial.println("data#" + String(x1) + '#' + String(y1));
   }
   else if (cmd == "getCurrent") {
     Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));

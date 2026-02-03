@@ -90,7 +90,7 @@ bool move_flag = false;// флаг выполнения команды
 
 void executeCommand(String cmd, String arg) {
   if (cmd == "getPlate") {
-      Serial.println("/wheels");
+      Serial.println("data#wheels");
   }
   else if (cmd == "moveStop") {
     move_flag = false;
@@ -98,8 +98,7 @@ void executeCommand(String cmd, String arg) {
     motor2.Stop();
     motor3.Stop();
     motor4.Stop();
-    Serial.println("/moveDone");
-    //Serial.println("moveSdone");
+    Serial.println("data#moveDone");
   }
   else if (cmd == "changeSpeed") {
     
@@ -137,10 +136,6 @@ void executeCommand(String cmd, String arg) {
     motor2.moveForward();
     motor3.moveForward();
     motor4.moveForward();
-    //delay(arg); // tofo: таймер вместо делэя
-    
-    Serial.println("/moveFdone");
-    // Serial.println(iarg);
   }
   else if (cmd == "moveBackward") {
     int iarg = arg.toInt();
@@ -152,9 +147,6 @@ void executeCommand(String cmd, String arg) {
     motor2.moveBackward();
     motor3.moveBackward();
     motor4.moveBackward();
-    // delay(arg);
-    Serial.println("/moveBdone");
-    // Serial.println(iarg);
   }
   else if (cmd == "rotateRight") {
     int iarg = arg.toInt();
@@ -166,11 +158,6 @@ void executeCommand(String cmd, String arg) {
     motor2.moveBackward();
     motor3.moveForward();
     motor4.moveForward();
-
-    Serial.println("/rotateRDone");
-    
-    // Serial.println("moveFdone");
-    // Serial.println(iarg);
   }
   else if (cmd == "rotateLeft") {
     int iarg = arg.toInt();
@@ -182,11 +169,6 @@ void executeCommand(String cmd, String arg) {
     motor2.moveForward();
     motor3.moveBackward();
     motor4.moveBackward();
-
-    Serial.println("/rotateLDone");
-    
-    // Serial.println("moveFdone");
-    // Serial.println(iarg);
   }
 }
 
@@ -223,10 +205,8 @@ void loop() {
     msg.remove(0, index+1);
     argument = msg;//.toInt();
 
-    
     Serial.println(command + msg);
 
-    
     executeCommand(command, argument);
   }
   
