@@ -252,11 +252,13 @@ void setup()
   // серво поворачивается максимально в одну и другую сторону, зависят от самой серво
   // и обычно даже указываются продавцом. Мы их тут указываем для того, чтобы
   // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы 
+  railServo.smoothStart();
   railServo.setSpeed(40);   // ограничить скорость
   railServo.setAccel(0);    // установить ускорение (разгон и торможение)
   railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
   manRotServo.attach(PIN_ROTSERVO);
+  railServo.smoothStart();
   manRotServo.setSpeed(50);   // ограничить скорость
   manRotServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
   manRotServo.setAutoDetach(false);
