@@ -35,3 +35,8 @@ class Limits:
         h_bounds = (self.v_bounds_min*self.weight<= p.x <= self.v_bounds_max*self.weight)
         v_bounds = (self.h_bounds_min*self.height <= p.y <= self.h_bounds_max*self.height)
         return v_bounds and h_bounds
+    
+    def contains_p_wh(self, p, weight, height):
+        h_bounds = (self.v_bounds_min*weight<= p.x <= self.v_bounds_max*weight)
+        v_bounds = (self.h_bounds_min*height <= p.y <= self.h_bounds_max*height)
+        return v_bounds and h_bounds

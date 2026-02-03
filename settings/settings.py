@@ -8,6 +8,7 @@ if project_root not in sys.path:sys.path.append(project_root)
 from photo_handler.limit_class import Limits
 from enum import StrEnum
 import numpy as np
+from datetime import timedelta
 
 trash_frames = 5
 
@@ -21,15 +22,21 @@ da = 0 #delta degree
 
 #limits
 central_line_limit = Limits((weight, height), length=(200, 1000))
-x_grab_lim = 2.5
+x_grab_lim = 2.5#2.5
 y_grab_lim = 2
 cube_take_limit = Limits((weight, height), v_bounds=(0.5-(cam_coef_ps*x_grab_lim/weight), 0.5+(cam_coef_ps*x_grab_lim/weight)), h_bounds=(0.5-(cam_coef_ps*y_grab_lim/height), 0.5+(cam_coef_ps*y_grab_lim/height)))
+
+rail_ground_limit = 16
+rail_board_limit = 9
+rail_zero_limit = 0
 
 arduino_ver_step_limit = [0, 30]
 arduino_hor_step_limit = [0, 47]
 open_limit = 120
 close_limit = 0
 
+separator = '#' 
+wait_arduino_define = timedelta(seconds=2)
 
 hand_cam_id = 0
 base_cam_id = 1

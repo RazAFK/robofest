@@ -99,6 +99,6 @@ def remath_cords(old_abs: tuple[float, float], new_rel: tuple[float, float], old
     new_rel: (x, y) relative cords\n
     coef: santimetrs/pixels
     '''
-    xA = abs(old_abs[0] + (coef*(old_rel[0]-new_rel[0])))
-    yA = abs(old_abs[-1] + (coef*(old_rel[-1]-new_rel[-1])))
+    xA = abs(old_abs[0] - (coef*(old_rel[0]-new_rel[0])))
+    yA = abs(old_abs[-1] - (coef*(old_rel[-1]-new_rel[-1])))
     return (xA, yA)

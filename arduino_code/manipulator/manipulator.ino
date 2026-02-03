@@ -1,7 +1,6 @@
 #include <ServoDriverSmooth.h>
 #include <ServoSmooth.h>
 #include <Servo.h>
-#include <math.h>
 
 // пины манипулятора
 #define PIN_HORSENS A5 // сенсор горизонтального движения
@@ -119,8 +118,13 @@ class railMotor : yellowMotor {
           isOpened = analogRead(pinSensor) < 500;
           
           if (millis() - startTime > 1000) {
-            target = curPosition;
-            Serial.println("moveDone");
+            if (!isMovingForward) {
+              curPosition = 0;
+            }
+            else {
+              curPosition = 47;
+            }
+            Serial.println("data#moveDone");
             return;
           }
         }
@@ -134,24 +138,22 @@ class railMotor : yellowMotor {
         curPosition--;
       }
       if (curPosition == target) {
-        Serial.println("moveDone");
+        Serial.println("data#moveDone");
       }
     }
     this->Stop();
   }
 
-  void reset (int d) {
+  void reset () {
     if (delta != 0) {
-      this->setTarget(1);
+      this->setTarget(-100);
     }
     else {
-      this->setTarget(59);
+      this->setTarget(70);
     }
     while (target != curPosition) {
       this->step();
     }
-    this->moveForward();
-    delay(d);
     this->Stop();
     target = 0;
     curPosition = 0;
@@ -168,7 +170,7 @@ int argument2;
 
 // для движения манипулятора в координатной плоскости
 float railLength = 45; // длина рейки
-int angle0 = 45; // нулевой угол
+int angle0 = 60; // нулевой угол
 int minRadius = 10; // минимальный радиус
 float dstep = 0.745;//длинна шага в сантиметрах
 
@@ -184,7 +186,7 @@ Servo manGrabServo;
 
 void executeCommand(String cmd, int arg1, int arg2) {
   if (cmd == "getPlate") { // проверка платы
-    Serial.println("manipulator");
+    Serial.println("data#manipulator");
   }
   else if (cmd == "moveVerRail") { // 
     verMotor.setTarget(arg1);
@@ -204,29 +206,28 @@ void executeCommand(String cmd, int arg1, int arg2) {
     manGrabServo.write(arg1);
   }
   else if (cmd == "reset") { // выставление в 0 для сброса погрешности
-    verMotor.reset(250);
+    verMotor.reset();
     railServo.setTargetDeg(90);
     while (railServo.getCurrentDeg() != 90) {
       railServo.tick();
     }
-    horMotor.reset(250);
-    Serial.println("done");
+    horMotor.reset();
+    Serial.println("data#resetDone");
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    int railAngle = (int)round(57.3 * atan((railLength * sin(angle0) - arg2) / (railLength * cos(angle0) - arg1))); // новый угол рейки
-    int manipulatorPos = (int)round(((railLength * cos(angle0) - arg1) / cos(railAngle) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
-    // Serial.println(String(railAngle));
-    // Serial.println(String((manipulatorPos-minRadius)/dstep));
+    int railAngle = (int)round(degrees(atan2((railLength * sin(radians(angle0)) - arg2), (railLength * cos(radians(angle0)) - arg1)))); // новый угол рейки
+    int manipulatorPos = (int)round(((railLength * cos(radians(angle0)) - arg1) / cos(radians(railAngle)) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
+    Serial.println(String(railAngle));
+    Serial.println(String(manipulatorPos));
     horMotor.setTarget(manipulatorPos);
     railServo.setTargetDeg(railAngle);
     manRotServo.setTargetDeg(180-railAngle);
-    Serial.println("move done");
   }
   else if (cmd == "getCoordinates") {
-    int x1 = (int)round(railLength * cos(angle0) - (horMotor.getCurrent() * dstep + minRadius) * cos(railServo.getCurrentDeg()));
-    int y1 = (int)round(railLength * sin(angle0) - (horMotor.getCurrent() * dstep + minRadius) * sin(railServo.getCurrentDeg()));
-    Serial.println(String(x1) + '#' + String(y1));
+    int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
+    int y1 = (int)round(railLength * sin(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * sin(radians(railServo.getCurrentDeg())));
+    Serial.println("data#cords#" + String(x1) + '#' + String(y1));
   }
   else if (cmd == "getCurrent") {
     Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));
@@ -247,16 +248,17 @@ void setup()
   horMotor.attach(PIN_HORMOT_PLUS, PIN_HORMOT_MINUS, PIN_HORSENS, 140, 0, 5);
   verMotor.attach(PIN_VERMOT_PLUS, PIN_VERMOT_MINUS, PIN_VERSENS, 220, 100, 5);
 
-  railServo.attach(6, 600, 2400);  // 600 и 2400 - длины импульсов, при которых
+  railServo.attach(6, 600, 2400, 90);  // 600 и 2400 - длины импульсов, при которых
   // серво поворачивается максимально в одну и другую сторону, зависят от самой серво
   // и обычно даже указываются продавцом. Мы их тут указываем для того, чтобы
-  // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы
-  // manRotServo.attach(PIN_ROTSERVO, 600, 2400);   
-  railServo.setSpeed(50);   // ограничить скорость
+  // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы 
+  railServo.smoothStart();
+  railServo.setSpeed(40);   // ограничить скорость
   railServo.setAccel(0);    // установить ускорение (разгон и торможение)
   railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
-  manRotServo.attach(PIN_ROTSERVO);
+  manRotServo.attach(PIN_ROTSERVO, 90);
+  railServo.smoothStart();
   manRotServo.setSpeed(50);   // ограничить скорость
   manRotServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
   manRotServo.setAutoDetach(false);
@@ -266,8 +268,7 @@ void setup()
   // manGrabServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
   // manGrabServo.setAutoDetach(false);
 
-  railServo.setTargetDeg(90);
-  manRotServo.setTargetDeg(90);
+  // manRotServo.setTargetDeg(90);
 }
 
 void loop()
@@ -285,15 +286,12 @@ void loop()
     index = msg.indexOf(sep);
     command = msg.substring(0, index);
     msg.remove(0, index+1);
-//    while(index != -1) {
-//      
-//    }
     index = msg.indexOf(sep);
     argument1 = (msg.substring(0, index)).toInt();
     msg.remove(0, index+1);
     argument2 = msg.toInt();
 
-    // Serial.println(command);
+    Serial.println(command);
 
     executeCommand(command, argument1, argument2);
   }

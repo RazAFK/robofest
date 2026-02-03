@@ -21,15 +21,6 @@ class Plates(StrEnum):
     wheels = 'wheels'
     undefined = 'undefined'
 
-class Q_obj:
-    def __init__(self, time: datetime.datetime, responce):
-        self.time = time
-        self.responce = responce
-    
-    def __str__(self):
-        return f'{self.time}: {self.responce}'
-    
-
 class Arduino:
 
     class Comands(StrEnum):
@@ -48,31 +39,7 @@ class Arduino:
             self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
             time.sleep(1)
         self.plate = plate
-
-        self.data_queue = queue.Queue(maxsize=1)
-
-    def start_thread(self):
-        thread = threading.Thread(target=self._update_loop, daemon=True)
-        thread.start()
     
-    def _update_loop(self):
-        while True:
-            data = self.read_com()
-            if data:
-                if self.data_queue.full():
-                    try: self.data_queue.get_nowait()
-                    except queue.Empty: pass
-                data = Q_obj(datetime.datetime.now(), data)
-                self.data_queue.put(data)
-    
-    def get_data_nowait(self):
-        try: return self.data_queue.get_nowait()
-        except queue.Empty: return None
-
-    def get_data(self, timeout=0.3):
-        try: return self.data_queue.get(timeout=timeout)
-        except queue.Empty: return None
-
     def write_com(self, comand):
         bite_comand = f'{comand}\n'.encode()
         self.arduino.write(bite_comand)
@@ -86,7 +53,11 @@ class Arduino:
 
         comand = self.convert_comand(self.Comands.getPlate)
         self.write_com(comand)
-        answer = str(self.get_data())
+        answer = self.read_com()
+        start = datetime.datetime.now()
+        delta = st.wait_arduino_define
+        while ('data' not in answer) and (datetime.datetime.now() - start <= delta):    
+            answer = self.read_com()
         for plate in Plates:
             if plate in answer:
                 self.plate = plate
@@ -166,16 +137,16 @@ class Manipulator(Arduino):
 
     def define_plate(self):
         pass
+
+
     
     def reset(self):
         comand = self.convert_comand(self.Comands.reset)
         self.write_com(comand)
     
     def getCoordinates(self):
-        data = self.get_data(timeout=0.5)
-        if data is not None:
-            return Point(*list(map(int, data.responce.split('#'))))
-        return data
+        comand = self.convert_comand(self.Comands.getCoordinates)
+        self.write_com(comand)
     
     def moveManipulator(self, x, y):
         comand = self.convert_comand(self.Comands.moveManipulator, x, y)
@@ -193,6 +164,15 @@ class Manipulator(Arduino):
         comand = self.convert_comand(self.Comands.moveVerRail, constrain(position, st.arduino_ver_step_limit[0], st.arduino_ver_step_limit[-1]), 0)
         self.write_com(comand)
     
+    def moveVerRail_ground(self):
+        self.moveVerRail(st.rail_ground_limit)
+    
+    def moveVerRail_board(self):
+        self.moveVerRail(st.rail_board_limit)
+    
+    def moveVerRail_zero(self):
+        self.moveVerRail(st.rail_zero_limit)
+
     def moveHorRail(self, position: int):
         f'''
         < >
@@ -222,6 +202,22 @@ class Manipulator(Arduino):
         '''
         comand = self.convert_comand(self.Comands.grabManipulator, self.Params.grab[pull], 0)
         self.write_com(comand)
+    
+    def grab_close(self):
+        self.grabManipulator(True)
+
+    def grab_open(self):
+        self.grabManipulator(False)
+    
+    def grab(self):
+        self.grab_open()
+        time.sleep(0.5)
+        self.moveVerRail_ground()
+        time.sleep(0.5)
+        self.grab_close()
+        time.sleep(0.5)
+        self.moveVerRail_zero()
+        time.sleep(0.5)
 
     def rotateRail(self, degrees: int):
         '''
@@ -245,7 +241,6 @@ def take_arduinos():
     manipulator, wheels = None, None
 
     for arduino in arduinos:
-        arduino.start_thread()
         if arduino.define_plate()==Plates.wheels:
             wheels = Wheels.from_existing(arduino)
         if arduino.define_plate()==Plates.manipulator:
@@ -259,3 +254,44 @@ def take_arduinos():
     
     return wheels, manipulator
 
+
+class States(StrEnum):
+    data = 'data'
+    moveDone = 'moveDone'
+    cords = 'cords'
+
+class Q_obj:
+
+    def __init__(self, time: datetime.datetime, responce):
+        self.time = time
+        self.responce = responce
+        self.type = responce.split(st.separator)[1]
+        self.args = list(responce.split(st.separator)[2:])
+
+    
+    def __str__(self):
+        return f'{self.time}: {self.responce}'
+    
+    def check_state(self, state: States):
+        return state in self.responce
+
+class Queue:
+    def __init__(self, arduino: Arduino|Manipulator|Wheels, size=5):
+        self.arduino = arduino
+        self.data_queue = queue.Queue(maxsize=size)
+
+    def start_thread(self):
+        thread = threading.Thread(target=self._update_loop, daemon=True)
+        thread.start()
+    
+    def _update_loop(self):
+        while True:
+            data = self.arduino.read_com()
+            if data:
+                if States.data in data:
+                    data = Q_obj(datetime.datetime.now(), data)
+                    self.data_queue.put(data)
+    
+    def get_data_nowait(self) -> Q_obj|None:
+        try: return self.data_queue.get_nowait()
+        except queue.Empty: return None
