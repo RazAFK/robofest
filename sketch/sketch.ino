@@ -119,7 +119,7 @@ class railMotor : yellowMotor {
           
           if (millis() - startTime > 1000) {
             target = curPosition;
-            Serial.println("moveDone");
+            Serial.println("/moveDone");
             return;
           }
         }
@@ -133,24 +133,22 @@ class railMotor : yellowMotor {
         curPosition--;
       }
       if (curPosition == target) {
-        Serial.println("moveDone");
+        Serial.println("/moveDone");
       }
     }
     this->Stop();
   }
 
-  void reset (int d) {
+  void reset () {
     if (delta != 0) {
-      this->setTarget(1);
+      this->setTarget(-100);
     }
     else {
-      this->setTarget(59);
+      this->setTarget(70);
     }
     while (target != curPosition) {
       this->step();
     }
-    this->moveForward();
-    delay(d);
     this->Stop();
     target = 0;
     curPosition = 0;
@@ -167,7 +165,7 @@ int argument2;
 
 // для движения манипулятора в координатной плоскости
 float railLength = 45; // длина рейки
-int angle0 = 45; // нулевой угол
+int angle0 = 60; // нулевой угол
 int minRadius = 10; // минимальный радиус
 float dstep = 0.745;//длинна шага в сантиметрах
 
@@ -203,13 +201,13 @@ void executeCommand(String cmd, int arg1, int arg2) {
     manGrabServo.write(arg1);
   }
   else if (cmd == "reset") { // выставление в 0 для сброса погрешности
-    verMotor.reset(250);
+    verMotor.reset();
     railServo.setTargetDeg(90);
     while (railServo.getCurrentDeg() != 90) {
       railServo.tick();
     }
-    horMotor.reset(250);
-    Serial.println("done");
+    horMotor.reset();
+    Serial.println("/moveDone");
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
@@ -224,7 +222,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
   else if (cmd == "getCoordinates") {
     int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
     int y1 = (int)round(railLength * sin(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * sin(radians(railServo.getCurrentDeg())));
-    Serial.println(String(x1) + '#' + String(y1));
+    Serial.println("/" + String(x1) + '#' + String(y1));
   }
   else if (cmd == "getCurrent") {
     Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));
@@ -282,15 +280,12 @@ void loop()
     index = msg.indexOf(sep);
     command = msg.substring(0, index);
     msg.remove(0, index+1);
-//    while(index != -1) {
-//      
-//    }
     index = msg.indexOf(sep);
     argument1 = (msg.substring(0, index)).toInt();
     msg.remove(0, index+1);
     argument2 = msg.toInt();
 
-    // Serial.println(command);
+    Serial.println(command);
 
     executeCommand(command, argument1, argument2);
   }

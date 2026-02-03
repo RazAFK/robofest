@@ -132,14 +132,14 @@ void executeCommand(String cmd, String arg) {
     move_flag = true;
     start_time = millis();
     moving_time = iarg;
-    executeCommand("changeSpeed", "235#235#255#255");
+    // executeCommand("changeSpeed", "235#235#255#255");
     motor1.moveForward();
     motor2.moveForward();
     motor3.moveForward();
     motor4.moveForward();
     //delay(arg); // tofo: таймер вместо делэя
     
-    // Serial.println("moveFdone");
+    // Serial.println("/moveFdone");
     // Serial.println(iarg);
   }
   else if (cmd == "moveBackward") {
@@ -147,13 +147,13 @@ void executeCommand(String cmd, String arg) {
     move_flag = true;
     start_time = millis();
     moving_time = iarg;
-    executeCommand("changeSpeed", "235#235#255#255");
+    // executeCommand("changeSpeed", "235#235#255#255");
     motor1.moveBackward();
     motor2.moveBackward();
     motor3.moveBackward();
     motor4.moveBackward();
-    //delay(arg);
-    // Serial.println("moveBdone");
+    // delay(arg);
+    // Serial.println("/moveBdone");
     // Serial.println(iarg);
   }
   else if (cmd == "rotateRight") {
@@ -161,12 +161,13 @@ void executeCommand(String cmd, String arg) {
     move_flag = true;
     start_time = millis();
     moving_time = iarg;
-    executeCommand("changeSpeed", "255#255#255#255");
+    // executeCommand("changeSpeed", "255#255#255#255");
     motor1.moveBackward();
     motor2.moveBackward();
     motor3.moveForward();
     motor4.moveForward();
-    //delay(arg); // tofo: таймер вместо делэя
+
+    Serial.println("/rotateRDone");
     
     // Serial.println("moveFdone");
     // Serial.println(iarg);
@@ -176,12 +177,13 @@ void executeCommand(String cmd, String arg) {
     move_flag = true;
     start_time = millis();
     moving_time = iarg;
-    executeCommand("changeSpeed", "255#255#255#255");
+    // executeCommand("changeSpeed", "255#255#255#255");
     motor1.moveForward();
     motor2.moveForward();
     motor3.moveBackward();
     motor4.moveBackward();
-    //delay(arg); // tofo: таймер вместо делэя
+
+    Serial.println("/rotateLDone");
     
     // Serial.println("moveFdone");
     // Serial.println(iarg);
@@ -222,7 +224,7 @@ void loop() {
     argument = msg;//.toInt();
 
     
-    //Serial.println(command + msg);
+    Serial.println(command + msg);
 
     
     executeCommand(command, argument);
