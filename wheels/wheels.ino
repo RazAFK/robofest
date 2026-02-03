@@ -90,7 +90,7 @@ bool move_flag = false;// флаг выполнения команды
 
 void executeCommand(String cmd, String arg) {
   if (cmd == "getPlate") {
-      Serial.println("wheels");
+      Serial.println("/wheels");
   }
   else if (cmd == "moveStop") {
     move_flag = false;
@@ -98,7 +98,7 @@ void executeCommand(String cmd, String arg) {
     motor2.Stop();
     motor3.Stop();
     motor4.Stop();
-    Serial.println("moveDone");
+    Serial.println("/moveDone");
     //Serial.println("moveSdone");
   }
   else if (cmd == "changeSpeed") {
@@ -139,7 +139,7 @@ void executeCommand(String cmd, String arg) {
     motor4.moveForward();
     //delay(arg); // tofo: таймер вместо делэя
     
-    // Serial.println("/moveFdone");
+    Serial.println("/moveFdone");
     // Serial.println(iarg);
   }
   else if (cmd == "moveBackward") {
@@ -153,7 +153,7 @@ void executeCommand(String cmd, String arg) {
     motor3.moveBackward();
     motor4.moveBackward();
     // delay(arg);
-    // Serial.println("/moveBdone");
+    Serial.println("/moveBdone");
     // Serial.println(iarg);
   }
   else if (cmd == "rotateRight") {

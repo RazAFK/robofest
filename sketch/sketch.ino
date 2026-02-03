@@ -118,7 +118,12 @@ class railMotor : yellowMotor {
           isOpened = analogRead(pinSensor) < 500;
           
           if (millis() - startTime > 1000) {
-            target = curPosition;
+            if (!isMovingForward) {
+              curPosition = 0;
+            }
+            else {
+              
+            }
             Serial.println("/moveDone");
             return;
           }
@@ -181,7 +186,7 @@ Servo manGrabServo;
 
 void executeCommand(String cmd, int arg1, int arg2) {
   if (cmd == "getPlate") { // проверка платы
-    Serial.println("manipulator");
+    Serial.println("/manipulator");
   }
   else if (cmd == "moveVerRail") { // 
     verMotor.setTarget(arg1);
