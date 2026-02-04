@@ -18,11 +18,14 @@ from photo_handler.camera_class import Camera, Flip
 
 
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(cur_dir, 'model')
-os.makedirs(model_path, exist_ok=True)
 
-reader = easyocr.Reader(['en'], gpu=False, model_storage_directory=model_path)
+def init_reader():
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(cur_dir, 'model')
+    os.makedirs(model_path, exist_ok=True)
+
+    reader = easyocr.Reader(['en'], gpu=False, model_storage_directory=model_path)
+    return reader
 
 def classify_color(hsv):
     if st.card_blue.contains_hsv(*hsv):
@@ -62,7 +65,25 @@ def max_dict(dic):
             result = [key, val]
     return result[0], result[-1]
 
-def handl_num(cam: Camera):
+def reader_result(frame, reader) -> tuple[list[tuple[int, int]], str, float]:
+    '''
+    Docstring for reader_result
+    
+    :param frame: MatLike
+    :param reader: reader model
+    :return: 
+    ret[0] = list[
+        top_left(x, y),
+        top_right(x, y),
+        bot_left(x, y),
+        bot_right(x, y)
+    ]
+    ret[1] = found text
+    ret[2] = сonfidence
+    '''
+    return reader.readtext(frame, allowlist='12345', )
+
+def handl_num(cam: Camera, reader):
     cam.trash_frames()
 
     frame = cam.get_frame(Flip.base)
@@ -72,7 +93,7 @@ def handl_num(cam: Camera):
     if frame is None:
         return text, color
 
-    result = reader.readtext(frame, allowlist='12345', )
+    result = reader_result(frame, reader)
 
     for res in result:
         coord=res[0]

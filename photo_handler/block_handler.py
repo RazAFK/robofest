@@ -6,6 +6,7 @@ if project_root not in sys.path:sys.path.append(project_root)
 
 from settings import settings as st
 from photo_handler.camera_class import Camera, Flip
+from photo_handler.num_handler import reader_result
 
 
 from sklearn.cluster import KMeans
@@ -93,10 +94,25 @@ def is_special_color(frame, cnt, color: st.Colors) -> bool:
     #return classify_color(dominant_hsv)
 
 
+def get_storage_centers(cam: Camera, reader):
+    cam.trash_frames()
+    frame = cam.get_frame(Flip.hand)
+    result = reader_result(frame, reader)
+    centers = []
+    for res in result:
+        text, conf = res[1], round(float(res[-1]))
+        if len(text)==1 and conf>0.85:
+            tl, br = list(map(int, res[0][0])), list(map(int, res[0][-2]))
+            x = int((abs(tl[0] - br[0]))/2) + tl[0]
+            y = int((abs(tl[-1] - br[-1]))/2) + tl[-1]
+            centers.append(((x, y), text, conf, frame))
+    return centers
+
 def remath_cords(old_abs: tuple[float, float], new_rel: tuple[float, float], old_rel: tuple[float, float]=(st.weight/2, st.height/2), coef: float=st.cam_coef_sp):
     '''
     old_abs: (x, y) absolute cords\n
     new_rel: (x, y) relative cords\n
+    old_rel: (x, y) relative old cords highly depends by weight and height\n
     coef: santimetrs/pixels
     '''
     xA = abs(old_abs[0] - (coef*(old_rel[0]-new_rel[0])))

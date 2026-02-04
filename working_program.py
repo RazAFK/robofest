@@ -8,8 +8,8 @@ import queue
 
 from photo_handler.line_class import *
 from photo_handler.camera_class import *
-#from photo_handler.num_handler import handl_num
-from photo_handler.block_handler import get_center_contour, is_special_color, remath_cords
+from photo_handler.num_handler import handl_num, init_reader
+from photo_handler.block_handler import get_center_contour, is_special_color, remath_cords, get_storage_centers
 
 from connector.arduino_class import *
 
@@ -55,6 +55,8 @@ hand_queue.start_thread()
 
 hand_cam = Camera(st.hand_cam_id)
 
+reader = init_reader()
+
 # base_cam = Camera(st.base_cam_id)
 # base_cam, hand_cam = define_cam(base_cam, hand_cam)
 
@@ -64,12 +66,14 @@ old_cords = None
 new_cords = None
 result = None
 finding_flag = False
+storage_flag = False
 move_flag = False
 grab_flag = False
 center_dot = False
 limit_dots = False
 limits = False
 last_start = timer.now()
+i=1
 
 def nothing(x):
     pass
@@ -87,9 +91,13 @@ while True:
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
-    elif key == ord('w'):
+    elif key == ord('w') and not storage_flag:
         finding_flag = not(finding_flag)
         print('finding_flag:', finding_flag)
+
+    elif key == ord('z') and not finding_flag:
+        storage_flag = not(storage_flag)
+        print('storage_flag:', storage_flag)
 
     elif key == ord('e'):
         x = cv2.getTrackbarPos('x', 'Settings')
@@ -137,6 +145,9 @@ while True:
             decorators.add(drow_limit)
         print('limits:', limits)
         limits = not(limits)
+    elif key == ord('f'):
+        cv2.imwrite(f'additions/photos/cubs/{i}.jpg', frame)
+        i+=1
 
     if result is not None:
         result = use_decor(decorators, result)
@@ -169,13 +180,31 @@ while True:
             cv2.circle(result, (cX, cY), 7, (255, 255, 255), -1)
             cv2.putText(result, f"Area: {int(area)}", (cX - 20, cY - 20),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            
+        elif storage_flag:
+            centers = get_storage_centers(hand_cam, reader)
+            ml = 0
+            cX, cY = old_cords.x, old_cords.y
+            for center in centers:
+                cords, text, conf, result = center
+                x, y = cords
+                l = st.hypot(old_cords, Point(x, y))
+                if l<ml:
+                    ml=l
+                    cX, cY = cords
+            if cX!=old_cords.x and cY!=old_cords.y:
+                cv2.circle(result, (cX, cY), 5, (0, 255, 0), -1)
+                cv2.putText(result, f'{text}, {conf}', (cX - 20, cY - 20),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            
+        if  (storage_flag or finding_flag) and (cX!=old_cords.x and cY!=old_cords.y):
             h = result.shape[0]
             w = result.shape[1]
             new_cords = remath_cords((old_cords.x, old_cords.y), (cX, cY), (w/2, h/2))
             new_cords = Point(int(new_cords[0]), int(new_cords[-1]))
             if st.cube_take_limit.contains_p(new_cords):
                 new_cords = None
-                # grab_flag = True
+
     if new_cords is not None and not move_flag and timer.now()-last_start>=timedelta(seconds=3):
         manipulator.moveManipulator(new_cords.x, new_cords.y)
         last_start = timer.now()
