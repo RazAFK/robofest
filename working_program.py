@@ -60,7 +60,7 @@ reader = init_reader()
 # base_cam = Camera(st.base_cam_id)
 # base_cam, hand_cam = define_cam(base_cam, hand_cam)
 
-manipulator.moveManipulator(0, 0)
+manipulator.moveManipulator(30, 20)
 
 old_cords = None
 new_cords = None

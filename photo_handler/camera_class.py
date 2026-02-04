@@ -87,36 +87,7 @@ class Camera:
         for l in lines:
             cv2.line(result, (l.x1, l.y1), (l.x2, l.y2), (0, 0, 255), line_thickness)
         return result
-    
-def process_frame_after_stop(cam: Camera, limit: Limits, trashold: float=1.0, frame_counter: int = 15):
-    cam.trash_frames()
-    lines = []
-    for _ in range(frame_counter):
-        frame = cam.get_frame()
-        edges = cam.process_frame_top(frame)
-        lines = cam.get_lines(edges)
-        lines = cam.process_lines(lines, limit)
-        if len(lines)==1:
-            lines.append(lines)
 
-    if not lines:
-        return None, 0
-    
-    groups = []# list[list[Segment, counter]]
-    
-    for seg in lines:
-        found = False
-        for i in range(len(groups)):
-            if sbs(seg, groups[i][0]):
-                groups[i][1] += 1
-                found = True
-                break
-        if not found:
-            groups.append([seg, 1])
-
-    best_segment, _ = max(groups, key=lambda x: x[1])
-    
-    return best_segment
 
 def define_cam(base_cam: Camera, hand_cam: Camera):
     frame = base_cam.get_frame(Flip.base)
