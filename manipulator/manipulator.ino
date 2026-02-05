@@ -47,7 +47,7 @@ class yellowMotor {
     digitalWrite(pinMinus, HIGH);
   }
 
-  void Stop() {
+  void stop() {
     digitalWrite(pinPlus, LOW);
     digitalWrite(pinMinus, LOW);
   }
@@ -63,6 +63,10 @@ class railMotor : yellowMotor {
   bool lastState;
 
   int delta;
+
+  enum MotorState { IDLE, MOVING, WAITING_FOR_SENSOR_CHANGE };
+
+  MotorState state = IDLE;
 
   unsigned long startTime; // начало шага
   
@@ -82,6 +86,8 @@ class railMotor : yellowMotor {
     movementSpeed = msp;
     pinSpeed = mspin;
     delta = d;
+
+    lastState = analogRead(pinSensor) < 500;
   }
 
   int getTraget() {
@@ -98,50 +104,38 @@ class railMotor : yellowMotor {
   }
 
   void step(){  
-    if (curPosition != target) {
-      isOpened = analogRead(pinSensor) < 500;
-      lastState = isOpened;
-
-      if (isMovingForward) {        
-        this->writeSpeed(movementSpeed - delta);
-        this->moveForward();
-      }
-      else {
-        this->writeSpeed(movementSpeed);
-        this->moveBackward();
-      }
-      
-      for (int i = 0; i < 2; i++) {
-        this->setStartTime();
-        
-        while (lastState == isOpened) {
-          isOpened = analogRead(pinSensor) < 500;
-          
-          if (millis() - startTime > 1000) {
-            if (!isMovingForward) {
-              curPosition = 0;
-            }
-            else {
-              curPosition = 47;
-            }
-            Serial.println("data#moveDone");
-            return;
-          }
+    switch (state) {
+      case IDLE:
+        if (curPosition != target) {
+          state = MOVING;
+          startTime = millis();
         }
-        lastState = isOpened;
-      }
-      
-      if (isMovingForward) {
-        curPosition++;
-      }
-      else {
-        curPosition--;
-      }
-      if (curPosition == target) {
-        Serial.println("data#moveDone");
-      }
+        break;
+      case MOVING:
+        if (isMovingForward) this->moveForward();
+        else this->moveBackward();
+        isOpened = analogRead(pinSensor) < 500;
+        
+        if (isOpened != lastState) {
+          lastState = isOpened;
+            if (isMovingForward) curPosition++;
+            else curPosition--;
+            
+            if (curPosition == target) {
+              this->stop();
+              Serial.println("data#moveDone");
+              state = IDLE;
+            } 
+            else {
+              state = MOVING;
+            }
+          }
+        if (millis() - startTime > 1000) {
+          target == curPosition;
+          state = IDLE;
+        }
+        break;
     }
-    this->Stop();
   }
 
   void reset () {
@@ -149,12 +143,12 @@ class railMotor : yellowMotor {
       this->setTarget(-100);
     }
     else {
-      this->setTarget(70);
+      this->setTarget(100);
     }
     while (target != curPosition) {
       this->step();
     }
-    this->Stop();
+    this->stop();
     target = 0;
     curPosition = 0;
   }
@@ -172,7 +166,7 @@ int argument2;
 float railLength = 45; // длина рейки
 int angle0 = 60; // нулевой угол
 int minRadius = 10; // минимальный радиус
-float dstep = 0.745;//длинна шага в сантиметрах
+float dstep = 0.53;//длинна шага в сантиметрах
 
 // моторы движения по рейке 
 railMotor horMotor;
@@ -216,8 +210,9 @@ void executeCommand(String cmd, int arg1, int arg2) {
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    int railAngle = (int)round(degrees(atan2((railLength * sin(radians(angle0)) - arg2), (railLength * cos(radians(angle0)) - arg1)))); // новый угол рейки
-    int manipulatorPos = (int)round(((railLength * cos(radians(angle0)) - arg1) / cos(radians(railAngle)) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
+    
+    float manipulatorPos = sqrt(pow(railLength * cos(radians(angle0)) - arg1, 2) + pow(railLength * sin(radians(angle0)) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
+    int railAngle = (int)round(degrees(acos((railLength * cos(radians(angle0)) - arg1) / (minRadius + round(manipulatorPos - minRadius))))); // новый угол рейки
     Serial.println(String(railAngle));
     Serial.println(String(manipulatorPos));
     horMotor.setTarget(manipulatorPos);
@@ -248,7 +243,7 @@ void setup()
   horMotor.attach(PIN_HORMOT_PLUS, PIN_HORMOT_MINUS, PIN_HORSENS, 140, 0, 5);
   verMotor.attach(PIN_VERMOT_PLUS, PIN_VERMOT_MINUS, PIN_VERSENS, 220, 100, 5);
 
-  railServo.attach(6, 600, 2400);  // 600 и 2400 - длины импульсов, при которых
+  railServo.attach(6, 600, 2400, 90);  // 600 и 2400 - длины импульсов, при которых
   // серво поворачивается максимально в одну и другую сторону, зависят от самой серво
   // и обычно даже указываются продавцом. Мы их тут указываем для того, чтобы
   // метод setTargetDeg() корректно отрабатывал полный диапазон поворота сервы 
@@ -257,7 +252,7 @@ void setup()
   railServo.setAccel(0);    // установить ускорение (разгон и торможение)
   railServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
-  manRotServo.attach(PIN_ROTSERVO);
+  manRotServo.attach(PIN_ROTSERVO, 600, 2400, 90);
   railServo.smoothStart();
   manRotServo.setSpeed(50);   // ограничить скорость
   manRotServo.setAccel(0.3);    // установить ускорение (разгон и торможение)
@@ -295,6 +290,10 @@ void loop()
     Serial.println(command);
 
     executeCommand(command, argument1, argument2);
+  }
+
+  if (millis() % 1000 == 0) {
+    Serial.println("loopa zalupa");
   }
   
   delay(10);
