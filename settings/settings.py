@@ -15,10 +15,13 @@ def hypot(p1, p2):
 
 trash_frames = 5
 
+#160 best pixels
+
 #screen params
 weight, height = 640, 480
-cam_coef_sp = 5/160 #santimetrs/pixels
-cam_coef_ps = 160/5 #pixels/santimetrs
+cam_coef_sp = 5/147 #santimetrs/pixels
+cam_coef_ps = 147/5 #pixels/santimetrs
+min_cube_area = 60_000
 
 dp = 7 #delta pixels
 da = 0 #delta degree

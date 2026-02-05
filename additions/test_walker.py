@@ -28,7 +28,10 @@ def c_f(s):
     elif c=='rt':
         manipulator.rotateRail(90)
     elif c=='chg':
-        wheels.change_speed(arg[1], arg[2], arg[3], arg[4])
+        if len(arg[1:])==1:
+            wheels.change_speed(arg[1], arg[1], arg[1], arg[1])
+        else:
+            wheels.change_speed(arg[1], arg[2], arg[3], arg[4])
 
 start = datetime.now()
 

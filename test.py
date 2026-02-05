@@ -13,24 +13,39 @@ import easyocr
 from sklearn.cluster import KMeans
 from collections import Counter
 from photo_handler.camera_class import Camera, Flip
-from photo_handler.num_handler import init_reader
-from photo_handler.block_handler import get_storage_centers
+# from photo_handler.num_handler import init_reader
+from photo_handler.block_handler import get_center_contour
 
+i = 1
 
-reader = init_reader()
-cam = Camera(0)
+frame = cv2.imread(f'additions/photos/cubs/{i}.jpg')
 
+ret, result = get_center_contour(frame)
+p = Point(*result[0])
+contour = result[1]
+rect = cv2.boundingRect(contour)
+frame = result[-1]
+result = frame.copy()
 while True:
+    frame = cv2.imread(f'additions/photos/cubs/{i}.jpg')
+    ret, result = get_center_contour(frame)
+    p = Point(*result[0])
+    contour = result[1]
+    rect = cv2.boundingRect(contour)
+    frame = result[-1]
+    result = frame.copy()
+
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
+    elif key == ord('s'):
+        i+=1
+    elif key == ord('a'):
+        i-=1
+    # cv2.imshow('frame', frame)
+    # for cont in contour:
+    cv2.drawContours(result, [contour], -1, (0, 255, 0), 2)
+    cv2.circle(result, (p.x, p.y), 4, (0, 255, 0), -1)
+    cv2.imshow(f'{i}', result)
 
-    frame = cam.get_frame(Flip.debug)
-    centers = get_storage_centers(cam, reader)
-    for center in centers:
-        cords, text, conf, result = center
-        cv2.circle(result, cords, 5, (0, 255, 0), -1)
-        cv2.putText(result, f'{text}, {conf}', (cords[0] - 20, cords[1] - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-    cv2.imshow('frame', frame)
-    cv2.imshow('result', result)
+cv2.destroyAllWindows()

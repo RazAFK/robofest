@@ -1,7 +1,4 @@
 import cv2
-import numpy as np
-from settings import settings as st
-from photo_handler.camera_class import Camera
 
 points = []
 
@@ -18,7 +15,7 @@ def click_event(event, x, y, flags, param):
 # white = cv2.imread('additions/photos/white.jpg')
 
 # frame = white
-paper = cv2.imread('additions/photos/paper/14.jpg')
+paper = cv2.imread('C:/Users/admin/Desktop/cube_photos/509.jpg')
 paper = cv2.rotate(paper, cv2.ROTATE_90_CLOCKWISE)
 cv2.namedWindow('result')
 cv2.setMouseCallback('result', click_event)

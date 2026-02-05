@@ -13,8 +13,6 @@ end = datetime.now()
 
 print('total time:', end-start)
 
-print(manipulator.getCoardinates())
-
 # arduino = Arduino('COM5')
 # sleep(2)
 # arduino.start_thread()

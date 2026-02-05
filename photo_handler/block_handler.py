@@ -14,16 +14,16 @@ from collections import Counter
 import cv2
 import numpy as np
 
-def get_center_contour(cam: Camera):
+def get_center_contour(frame):#cam: Camera):
     '''
     return True, [(x, y), contours, frame]\n
     or\n
     return False, None
     '''
-    cam.trash_frames()
-    frame = cam.get_frame(Flip.hand)
-    if frame is None:
-        return False, None
+    # cam.trash_frames()
+    # frame = cam.get_frame(Flip.hand)
+    # if frame is None:
+    #     return False, None
     
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -55,6 +55,11 @@ def get_center_contour(cam: Camera):
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
 
+    area = cv2.contourArea(cnt)
+    if area < st.min_cube_area:
+        cnt = cv2.boundingRect(cnt)
+        cX = min(cnt[0], cnt[2])+int(abs(cnt[2]-cnt[0])/2)
+        cY = min(cnt[1], cnt[3])+int(abs(cnt[3]-cnt[1])/2)
     return True, [(cX, cY), cnt, frame]
 
 def get_dominant_color(image, k=3):
