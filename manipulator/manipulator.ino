@@ -131,26 +131,22 @@ class railMotor : yellowMotor {
             }
           }
         if (millis() - startTime > 1000) {
+          if (isMovingForward) {
+            if (delta != 0) {
+              curPosition = 20;
+            }
+            else {
+              curPosition = 85;
+            }
+          }
+          else {
+            curPosition = 0;
+          }
           target == curPosition;
           state = IDLE;
         }
         break;
     }
-  }
-
-  void reset () {
-    if (delta != 0) {
-      this->setTarget(-100);
-    }
-    else {
-      this->setTarget(100);
-    }
-    while (target != curPosition) {
-      this->step();
-    }
-    this->stop();
-    target = 0;
-    curPosition = 0;
   }
 };
 
@@ -295,6 +291,4 @@ void loop()
   if (millis() % 1000 == 0) {
     Serial.println("loopa zalupa");
   }
-  
-  delay(10);
 }
