@@ -1,5 +1,0 @@
-/robofest/
-/additions/
-/connector/
-/photo_handler/
-/settings/

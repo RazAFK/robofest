@@ -1,1 +1,0 @@
-# tuta lezhit code manipulatora
