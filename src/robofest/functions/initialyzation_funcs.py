@@ -8,6 +8,7 @@ def get_available_ports():
 
 def init_arduino() -> tuple[Arm, Queue, Wheels, Queue]:
     ports = get_available_ports()
+    print(ports)
     found_devices = {}
 
     for port in ports:

@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 from robofest.classes.geometry_class import Segment
 from robofest.classes.limit_class import Limits
@@ -27,5 +28,7 @@ def drow_limit(frame: cv2.Mat, limit: Limits, color = (0, 0, 255), line_thicknes
     cv2.line(result, (0, int(limit.y_bounds[0]*limit.height)), (limit.width, int(limit.y_bounds[0]*limit.height)), color, line_thickness)
     cv2.line(result, (0, int(limit.y_bounds[-1]*limit.height)), (limit.width, int(limit.y_bounds[-1]*limit.height)), color, line_thickness)
 
-    cv2.lint(result, (0, 0), ())
+    g = limit.length_min
+    cv2.line(result, (100, 100), (int(np.cos(np.radians(limit.angle_min))*g), int(np.sin(np.radians(limit.angle_min))*g)), color, line_thickness)
+    cv2.line(result, (100, 200), (int(np.cos(np.radians(limit.angle_max))*g), int(np.sin(np.radians(limit.angle_max))*g)), color, line_thickness)
     return result
