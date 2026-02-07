@@ -36,3 +36,26 @@ class Limits:
             self.contains_point(s.p2)
         ]
         return all(conditions)
+    
+    def __str__(self):
+        ret = f'''
+        {self.__class__.__name__}:
+        a: {self.angle_min, self.angle_min}
+        l: {self.length_min, self.length_max}
+        x: {self.x_min, self.x_max}
+        y: {self.y_min, self.y_max}
+        '''
+        return ret
+    
+    def __eq__(self, value):
+        conditions = [
+            self.angle_min==value.angle_min,
+            self.angle_min==value.angle_min,
+            self.length_min==value.length_min,
+            self.length_max==value.length_max,
+            self.x_min==value.x_min,
+            self.x_max==value.x_max,
+            self.y_min==value.y_min,
+            self.y_max==value.y_max
+        ]
+        return all(conditions)

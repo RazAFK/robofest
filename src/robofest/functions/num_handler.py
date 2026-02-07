@@ -49,13 +49,12 @@ def filter_nums(nums):
     if len(nums)>0:
         max_area = max(nums, key=lambda x: x[-2])
         cords = [tuple(map(int, cord)) for cord in max_area[-1]]
-        return True, (max_area[:-1], cords)
-    return False, None
+        return True, (list(max_area[:-1])+list(cords))
+    return False, (None, None)
 
 def is_right_num(num):
     conditions = [
         len(num[0])==1,
-        num[1] is not None,
         num[2] > st.limit_min_area_num
     ]
     return all(conditions)
@@ -63,5 +62,5 @@ def is_right_num(num):
 def handl_num(frame, reader: Reader):
     nums = get_nums(frame, reader)
     ret, num = filter_nums(nums)
-    if ret and is_right_num(num): return nums
+    if ret and is_right_num(num): return nums[0]
     return None

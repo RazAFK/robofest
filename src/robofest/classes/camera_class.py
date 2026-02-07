@@ -4,14 +4,14 @@ from enum import StrEnum
 from robofest.settings import settings as st
 
 class Flip(StrEnum):
-    base = 'base'
+    wheels = 'wheels'
     hand = 'hand'
     debug = 'debug'
 
 def flip(frame: cv2.Mat, flip: Flip):
     if frame is None: return None
     if flip==Flip.debug: return frame
-    if flip==Flip.base: return cv2.rotate(frame, cv2.ROTATE_180)
+    if flip==Flip.wheels: return cv2.rotate(frame, cv2.ROTATE_180)
     if flip==Flip.hand: return cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 
 class Camera:

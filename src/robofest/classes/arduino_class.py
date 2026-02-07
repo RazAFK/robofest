@@ -24,18 +24,20 @@ class Arduino:
             self.arduino = connection
         else:
             self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
-            time.sleep(1)
-    
+            time.sleep(2)
+
     def write_com(self, comand):
+        self.arduino.reset_input_buffer()
+        
         bite_comand = f'{comand}\n'.encode()
         self.arduino.write(bite_comand)
 
     def read_com(self):
-        answer = self.arduino.readline().decode('utf-8', errors='ignore')
+        answer = self.arduino.readline().decode('utf-8', errors='ignore').strip()
         return answer
     
     def __str__(self):
-        return f'{self.plate} on port {self.port}'
+        return f'arduino on port {self.port}'
     
 class Wheels(Arduino):
 

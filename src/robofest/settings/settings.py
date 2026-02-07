@@ -12,8 +12,8 @@ separator = '#'
 queue_size = 5
 
 #arduino init
-arduino_baudrate=9600
-arduino_timeout=0.1
+arduino_baudrate = 115200
+arduino_timeout = 1
 
 wait_arduino_define = datetime.timedelta(seconds=2)
 

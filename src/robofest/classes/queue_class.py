@@ -28,8 +28,9 @@ class Queue:
     def _update_loop(self):
         while True:
             data = self.arduino.read_com()
+            print(data)
             if data:
-                if st.Prefixes.data in data:
+                if st.Prefixes.data in str(data):
                     data = Object(datetime.datetime.now(), data)
                     self.data_queue.put(data)
             time.sleep(0.01)
