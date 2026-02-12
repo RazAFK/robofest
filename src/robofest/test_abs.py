@@ -1,6 +1,6 @@
-from robofest.classes.arduino_class import Arm, Arduino
+from robofest.classes.arduino_class_old import Arm, Arduino
 import time
-from robofest.classes.queue_class import Queue
+from robofest.tests.arduino_test import Queue
 
 temp_ard = Arm('COM3')
 

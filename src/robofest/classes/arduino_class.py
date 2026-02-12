@@ -1,30 +1,50 @@
-import serial
+from __future__ import annotations
+
+import serial, serial.tools.list_ports, queue, threading, datetime
 import os, time
 from enum import StrEnum
 
+
 from robofest.settings import settings as st
 
-class Plates(StrEnum):
-    manipulator = 'manipulator'
-    wheels = 'wheels'
+def get_available_ports():
+    return [port.name for port in serial.tools.list_ports.comports()]
+
+class Object:
+    def __init__(self, time: datetime.datetime, responce: str):
+        self.time = time
+        self.responce = responce
+        self.type = responce.split(st.separator)[1]
+        self.args = list(responce.split(st.separator)[2:])
+
+    def __str__(self):
+        return f'{self.time}: {self.responce}'
+    
+    def check_pref(self, prefix: st.Prefixes):
+        return prefix in self.responce
 
 class Arduino:
 
     class Comands(StrEnum):
-        getPlate = 'getPlate'
+        stop = 'Stop'
 
-    def convert_comand(self, name: Comands, *args):
+    def convert_comand(self, name, *args):
         return name + '#' + '#'.join(list(map(str, args)))
-
-    def __init__(self, port: str, baudrate=st.arduino_baudrate, timeout=st.arduino_timeout, connection=None):
+    
+    def __init__(self, port: str, baudrate=st.arduino_baudrate, timeout=st.arduino_timeout):
         self.port = port
+        self.queue = queue.Queue(st.queue_size)
+        self.whe = self.Whe(self)
+        self.arm = self.Arm(self)
+
         if os.name=='posix' and ('/dev/' not in port):
             self.port = '/dev/'+port
-        if connection:
-            self.arduino = connection
-        else:
-            self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
-            time.sleep(2)
+        self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
+        time.sleep(2)
+
+        self.running = True
+        self.thread = threading.Thread(target=self._update_loop, daemon=True)
+        self.thread.start()
 
     def write_com(self, comand):
         self.arduino.reset_input_buffer()
@@ -36,130 +56,52 @@ class Arduino:
         answer = self.arduino.readline().decode('utf-8', errors='ignore').strip()
         return answer
     
-    def __str__(self):
-        return f'arduino on port {self.port}'
-    
-class Wheels(Arduino):
+    def _update_loop(self):
+        while True:
+            data = self.read_com()
+            if data:
+                if st.Prefixes.data in str(data):
+                    data = Object(datetime.datetime.now(), data)
+                    self.queue.put(data)
+            # time.sleep(0.01)
 
-    class Comands(StrEnum):
-        moveForward = 'moveForward'
-        moveBackward = 'moveBackward'
-        moveStop = 'moveStop'
-        changeSpeed = 'changeSpeed'
-        rotateRight = 'rotateRight'
-        rotateLeft = 'rotateLeft'
+    def get_data(self) -> Object|None:
+        try: return self.queue.get_nowait()
+        except queue.Empty: return None
 
-    def move_stop(self):
-        comand = self.convert_comand(self.Comands.moveStop)
+    def stop(self):
+        comand = self.convert_comand(self.Comands.stop)
         self.write_com(comand)
 
-    def change_speed(self, s1, s2, s3, s4):
-        comand = self.convert_comand(self.Comands.changeSpeed, s1, s2, s3, s4)
-        self.write_com(comand)
-
-    def move_forward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveForward, milliseconds)
-        self.write_com(comand)
-
-    def move_backward_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.moveBackward, milliseconds)
-        self.write_com(comand)
-
-    def move_forward_distance(self, santimetrs):
-        pass
-
-    def move_backforward_distance(self, santimetrs):
-        pass
-    
-    def roatate_right_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.rotateRight, milliseconds)
-        self.write_com(comand)
-
-    def roatate_left_time(self, milliseconds):
-        comand = self.convert_comand(self.Comands.rotateLeft, milliseconds)
-        self.write_com(comand)
-
-    def roatate_right_degrees(self, degrees):
-        pass
-
-    def roatate_left_degrees(self, degrees):
-        pass
-
-class Arm(Arduino):
-    
-    class Params:
-        grab = {True: st.limit_manipulator_open, False: st.limit_manipulator_close}
-
-    class Comands(StrEnum):
-        moveVerRail = 'moveVerRail'
-        moveHorRail = 'moveHorRail'
-        rotateManipulator = 'rotateManipulator'
-        grabManipulator = 'grabManipulator'
-        rotateRail = 'rotateRail'
-        moveManipulator = 'moveManipulator'
-        getCoordinates = 'getCoordinates'
-    
-    def get_coordinates(self):
-        comand = self.convert_comand(self.Comands.getCoordinates)
-        self.write_com(comand)
-    
-    def move_arm(self, x, y):
-        comand = self.convert_comand(self.Comands.moveManipulator, x, y)
-        self.write_com(comand)
-
-
-    def move_vertical_rail(self, position: int):
-        f'''
-        ^
-        v
-        moving
-
-        :param position: [{st.limit_vertical_step[0]}; {st.limit_vertical_step[-1]}]
-        '''
-        comand = self.convert_comand(self.Comands.moveVerRail, position)
-        self.write_com(comand)
-
-    def move_horizontal_rail(self, position: int):
-        f'''
-        < >
-        moving
+    class Whe:
+        class Comands(StrEnum):
+            moveForward = 'moveForward'
+            moveBackward = 'moveBackward'
+            moveStop = 'moveStop'
         
-        :param position: [{st.limit_horizontal_step[0]}; {st.limit_horizontal_step[-1]}]
-        '''
-        comand = self.convert_comand(self.Comands.moveHorRail, position)
-        self.write_com(comand)
+        def __init__(self, master: Arduino):
+            self.master = master
 
-    def rotate_manipulator(self, degrees: int):
-        '''
-        rotating manipulator
+        def move_stop(self):
+            comand = self.master.convert_comand(self.Comands.moveStop)
+            self.master.write_com(comand)
+
+        def move_forward_time(self, milliseconds):
+            comand = self.master.convert_comand(self.Comands.moveForward, milliseconds)
+            self.master.write_com(comand)
+
+        def move_backward_time(self, milliseconds):
+            comand = self.master.convert_comand(self.Comands.moveBackward, milliseconds)
+            self.master.write_com(comand)
+
+    class Arm:
+        class Comands(StrEnum):
+            moveArm = 'moveArm'
         
-        :param degrees: [0; 180]
-        '''
-        comand = self.convert_comand(self.Comands.rotateManipulator, degrees)
-        self.write_com(comand)
+        def __init__(self, master: Arduino):
+            self.master = master
 
-    def grab_manipulator(self, pull: bool):
-        '''
-        True - manipulator pulls hands
-        
-        False - manipulator unpulls hands
+        def move_manipulator(self, x, y):
+            comand = self.master.convert_comand(self.Comands.moveArm, x, y)
+            self.master.write_com(comand)
 
-        :param degrees: True || False
-        '''
-        comand = self.convert_comand(self.Comands.grabManipulator, self.Params.grab[pull], 0)
-        self.write_com(comand)
-    
-    def grab_close(self):
-        self.grab_manipulator(True)
-
-    def grab_open(self):
-        self.grab_manipulator(False)
-
-    def rotate_rail(self, degrees: int):
-        '''
-        rotating rail
-
-        :param degrees: [0; 180]
-        '''
-        comand = self.convert_comand(self.Comands.rotateRail, degrees)
-        self.write_com(comand)
