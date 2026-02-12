@@ -4,16 +4,18 @@ from enum import StrEnum
 #arduino queue
 class Prefixes(StrEnum):
     data = 'data'
-    moveDone = 'moveDone'
+    move_done = 'moveDone'
     cords = 'cords'
 
 separator = '#'
 
 queue_size = 5
+queue_delay = 0
 
 #arduino init
 arduino_baudrate = 115200
-arduino_timeout = 1
+arduino_timeout = 0.1
+arduino_init_delay = 2
 
 wait_arduino_define = datetime.timedelta(seconds=2)
 

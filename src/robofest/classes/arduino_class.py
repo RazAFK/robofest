@@ -40,7 +40,7 @@ class Arduino:
         if os.name=='posix' and ('/dev/' not in port):
             self.port = '/dev/'+port
         self.arduino = serial.Serial(port=self.port, baudrate=baudrate, timeout=timeout)
-        time.sleep(2)
+        time.sleep(st.arduino_init_delay)
 
         self.running = True
         self.thread = threading.Thread(target=self._update_loop, daemon=True)
@@ -63,7 +63,7 @@ class Arduino:
                 if st.Prefixes.data in str(data):
                     data = Object(datetime.datetime.now(), data)
                     self.queue.put(data)
-            # time.sleep(0.01)
+            time.sleep(st.queue_delay)
 
     def get_data(self) -> Object|None:
         try: return self.queue.get_nowait()

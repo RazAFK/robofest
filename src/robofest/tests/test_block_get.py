@@ -8,11 +8,11 @@ from robofest.settings import limits_settings as lst
 from robofest.classes.camera_class import *
 from robofest.classes.reader_class import Reader
 from robofest.classes.geometry_class import Point
+from robofest.classes.arduino_class import Arduino
 
 from robofest.functions.num_handler import handl_num
 from robofest.functions.lines_handler import handl_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit
-from robofest.functions.initialyzation_funcs import init_arduino
 from robofest.functions.center_handler import get_center_contour, get_storage_centers
 from robofest.functions.utilities import remath_cords
 
@@ -31,8 +31,7 @@ def use_decor(s: set, img):
 
 
 
-arm, arm_q, wheels, wheels_q = init_arduino()
-print(arm, wheels)
+arduino = Arduino()
 
 arm_cam = Camera(0)
 
