@@ -57,7 +57,7 @@ class Arduino:
         return answer
     
     def _update_loop(self):
-        while True:
+        while self.running:
             data = self.read_com()
             if data:
                 if st.Prefixes.data in str(data):
