@@ -217,10 +217,12 @@ void executeCommand(String cmd, int arg1, int arg2) {
   }
   else if (cmd == "moveManipulator") { // движение манипулятора по абсолютным координатам
     Serial.println("start moving");
-    int railAngle = (int)round(degrees(atan2((railLength * sin(radians(angle0)) - arg2), (railLength * cos(radians(angle0)) - arg1)))); // новый угол рейки
-    int manipulatorPos = (int)round(((railLength * cos(radians(angle0)) - arg1) / cos(radians(railAngle)) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
-    Serial.println(String(railAngle));
-    Serial.println(String(manipulatorPos));
+//    int railAngle = (int)round(degrees(atan2((railLength * sin(radians(angle0)) - arg2), (railLength * cos(radians(angle0)) - arg1)))); // новый угол рейки
+//    int manipulatorPos = (int)round(((railLength * cos(radians(angle0)) - arg1) / cos(radians(railAngle)) - minRadius) / dstep); // позиция манипулятора на горизонтальной рейке
+    float manipulatorPos = sqrt(pow(railLength * cos(radians(angle0)) - arg1, 2) + pow(railLength * sin(radians(angle0)) - arg2, 2)); // позиция манипулятора на горизонтальной рейке
+    int railAngle = (int)round(degrees(acos((railLength * cos(radians(angle0)) - arg1)/(minRadius + round(manipulatorPos - minRadius))))); // новый угол рейки
+//    Serial.println(String(railAngle));
+//    Serial.println(String(manipulatorPos - minRadius));
     horMotor.setTarget(manipulatorPos);
     railServo.setTargetDeg(railAngle);
     manRotServo.write(180-railAngle);
@@ -228,7 +230,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
   else if (cmd == "getCoordinates") {
     int x1 = (int)round(railLength * cos(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * cos(radians(railServo.getCurrentDeg())));
     int y1 = (int)round(railLength * sin(radians(angle0)) - (horMotor.getCurrent() * dstep + minRadius) * sin(radians(railServo.getCurrentDeg())));
-    Serial.println("data#" + String(x1) + '#' + String(y1));
+    Serial.println("data#cords#" + String(x1) + '#' + String(y1));
   }
   else if (cmd == "getCurrent") {
     Serial.println(String(horMotor.getCurrent()) + " " + String(railServo.getCurrentDeg()));
@@ -237,7 +239,7 @@ void executeCommand(String cmd, int arg1, int arg2) {
  
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // настройка пинов
   pinMode(5, OUTPUT);
@@ -293,10 +295,8 @@ void loop()
     msg.remove(0, index+1);
     argument2 = msg.toInt();
 
-    Serial.println(command);
+    // Serial.println(command);
 
     executeCommand(command, argument1, argument2);
   }
-  
-  delay(10);
 }

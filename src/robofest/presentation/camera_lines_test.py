@@ -4,10 +4,9 @@ from robofest.settings import settings as st
 from robofest.settings import limits_settings as lst
 
 from robofest.classes.camera_class import *
-from robofest.classes.reader_class import Reader
 from robofest.classes.limit_class import Limits
 
-from robofest.functions.num_handler import handl_num
+# from robofest.functions.num_handler import handl_num
 from robofest.functions.lines_handler import handl_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_angles
 from robofest.functions.initialyzation_funcs import init_arduino
@@ -16,7 +15,7 @@ from robofest.functions.initialyzation_funcs import init_arduino
 # arm, arm_q, wheels, wheels_q = init_arduino()
 # print(arm, wheels)
 
-arm_cam = Camera(0)
+arm_cam = Camera(1)
 
 def nothing(x):
     pass
