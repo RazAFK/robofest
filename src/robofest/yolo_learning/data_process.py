@@ -5,7 +5,7 @@ form = '.jpg'
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
-ret_dir = os.path.join(cur_dir, 'processed')
+ret_dir = os.path.abspath(path)
 os.makedirs(ret_dir, exist_ok=True)
 
 
@@ -57,8 +57,8 @@ def drow_rects(image):
         cv2.waitKey(1)
 
 for key, value in zip(found_classes.keys(), found_classes.values()):
-    with open(os.path.join(cur_dir, 'processed', f'{key}.txt'), 'w') as file:
-        print(f'Now processing:', key)
+    with open(os.path.join(ret_dir, f'{key}.txt'), 'w') as file:
+        print(f'сейчас обрабатывается:', key)
         thread = threading.Thread(target=get_rects, daemon=True)
         thread.start()
         image = cv2.imread(path+str(key)+form)
@@ -76,23 +76,15 @@ for key, value in zip(found_classes.keys(), found_classes.values()):
             y_center = (y + h/2) / h_img
             norm_w = w / w_img
             norm_h = h / h_img
-            cls_name = input('class name:')
-            file.write(f"{cls_name} {x_center:.6f} {y_center:.6f} {norm_w:.6f} {norm_h:.6f}\n")
+            print('''Выбери класс(цифру):\n0: склад с кубами(циановый с кубиками или белыми квадратами)\n1: склад для кубов(серый с цифрами)\n2: круговое движение\n3: парковка(зелёная с буквой Р)''')
+            cls_name = input()
+            while cls_name not in ['1', '2', '3', '4']:
+                print('неверный номер, впиши ещё раз')
+                cls_name = input()
+            print(f'в файл записано: {cls_name} {x_center:.6f} {y_center:.6f} {norm_w:.6f} {norm_h:.6f}')
+            file.write(f'{cls_name} {x_center:.6f} {y_center:.6f} {norm_w:.6f} {norm_h:.6f}\n')
         
         thread_run = False
         cv2.destroyWindow('image')
-        
-
-
-
-# while running:
-#     inpt = input()
-#     if inpt=='stop':
-#         running=False
-#     if inpt=='start':  
-#         rects = cv2.selectROIs('frame', frame, showCrosshair=True, fromCenter=False)
-#     if inpt=='drow':
-#         rects = [((100, 100), (200, 200)), ((300, 300), (400, 400))]
-#     print(rects)
-
-# cv2.destroyAllWindows()
+print('молодец, всё готово')
+cv2.destroyAllWindows()

@@ -1,35 +1,47 @@
 #define SEPARATOR '#'
 #define ARM_PREFIX "data#arm#"
 #define WHEELS_PREFIX "data#whe#"
-#define ALL_PREFIX "data#all#"
+
+#include <Wire.h>
+#include <iarduino_I2C_Motor.h>
+
+iarduino_I2C_Motor mot(0x09);
 
 
-String message, command, arm_pr = ARM_PREFIX, whe_pr = WHEELS_PREFIX, all_pr = ALL_PREFIX;
+String message, command, arm_pr = ARM_PREFIX, whe_pr = WHEELS_PREFIX;
 int index, args[5], i, stop_list[1]={0};
 char sep = SEPARATOR;
 bool move_flag = false;
 unsigned long start_time = millis(), moving_time = millis();
 
 void executeCommand(String cmd, int args[]) {
-  if (cmd == "Stop") {
-    Serial.println(all_pr+"Stop");
-  }
-  else if (cmd == "moveStop") {
+  if (cmd == "moveStop") {
     move_flag = false;
     Serial.println(whe_pr+"moveDone");
   }
-  else if (cmd == "moveStop") {
-    Serial.println(whe_pr+"moveDone");
-  }
-  else if (cmd == "moveForward") {
+  else if (cmd == "mf") {
     move_flag = true;
     start_time = millis();
     moving_time = args[0];
+    mot.setSpeed(120, MOT_RPM);
+  }
+  else if (cmd == "command") {
+    Serial.println(whe_pr+"command"+String(args[0]));
+  }
+  else{
+    Serial.println("error");
   }
 }
 
 void setup() {
   Serial.begin(115200);
+
+  mot.begin(&Wire);
+  mot.setMagnet(7);
+  mot.setInvGear(false, false);
+  mot.setReducer(10.0);
+  mot.setStopNeutral(true);
+  mot.setError(20);
 }
 
 void loop() {

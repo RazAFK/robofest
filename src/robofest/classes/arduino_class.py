@@ -25,11 +25,8 @@ class Object:
 
 class Arduino:
 
-    class Comands(StrEnum):
-        stop = 'Stop'
-
-    def convert_comand(self, name, *args):
-        return name + '#' + '#'.join(list(map(str, args)))
+    def convert_command(self, name, *args):
+        return name + st.separator + st.separator.join(list(map(str, args)))
     
     def __init__(self, port: str, baudrate=st.arduino_baudrate, timeout=st.arduino_timeout):
         self.port = port
@@ -46,11 +43,11 @@ class Arduino:
         self.thread = threading.Thread(target=self._update_loop, daemon=True)
         self.thread.start()
 
-    def write_com(self, comand):
+    def write_com(self, command):
         self.arduino.reset_input_buffer()
         
-        bite_comand = f'{comand}\n'.encode()
-        self.arduino.write(bite_comand)
+        bite_command = f'{command}\n'.encode()
+        self.arduino.write(bite_command)
 
     def read_com(self):
         answer = self.arduino.readline().decode('utf-8', errors='ignore').strip()
@@ -69,12 +66,8 @@ class Arduino:
         try: return self.queue.get_nowait()
         except queue.Empty: return None
 
-    def stop(self):
-        comand = self.convert_comand(self.Comands.stop)
-        self.write_com(comand)
-
     class Whe:
-        class Comands(StrEnum):
+        class Commands(StrEnum):
             moveForward = 'moveForward'
             moveBackward = 'moveBackward'
             moveStop = 'moveStop'
@@ -83,25 +76,25 @@ class Arduino:
             self.master = master
 
         def move_stop(self):
-            comand = self.master.convert_comand(self.Comands.moveStop)
-            self.master.write_com(comand)
+            command = self.master.convert_command(self.Commands.moveStop)
+            self.master.write_com(command)
 
         def move_forward_time(self, milliseconds):
-            comand = self.master.convert_comand(self.Comands.moveForward, milliseconds)
-            self.master.write_com(comand)
+            command = self.master.convert_command(self.Commands.moveForward, milliseconds)
+            self.master.write_com(command)
 
         def move_backward_time(self, milliseconds):
-            comand = self.master.convert_comand(self.Comands.moveBackward, milliseconds)
-            self.master.write_com(comand)
+            command = self.master.convert_command(self.Commands.moveBackward, milliseconds)
+            self.master.write_com(command)
 
     class Arm:
-        class Comands(StrEnum):
+        class Commands(StrEnum):
             moveArm = 'moveArm'
         
         def __init__(self, master: Arduino):
             self.master = master
 
         def move_manipulator(self, x, y):
-            comand = self.master.convert_comand(self.Comands.moveArm, x, y)
-            self.master.write_com(comand)
+            command = self.master.convert_command(self.Commands.moveArm, x, y)
+            self.master.write_com(command)
 

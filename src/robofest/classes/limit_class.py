@@ -40,10 +40,11 @@ class Limits:
     def __str__(self):
         ret = f'''
         {self.__class__.__name__}:
-        a: {self.angle_min, self.angle_min}
-        l: {self.length_min, self.length_max}
-        x: {self.x_min, self.x_max}
-        y: {self.y_min, self.y_max}
+        sizes = {self.width, self.height},
+        lenght = {self.length_min, self.length_max},
+        angle = {self.angle_min, self.angle_min},
+        x_bounds = {self.x_min, self.x_max},
+        y_bounds = {self.y_min, self.y_max}
         '''
         return ret
     
