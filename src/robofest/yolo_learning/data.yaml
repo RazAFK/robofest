@@ -1,0 +1,10 @@
+# Содержимое файла data.yaml
+path: C:\Users\admin\Desktop\cube_photos\dataset # путь до созданной папки
+train: train\images
+val: val\images
+
+names:
+  0: storage_with_cubs  # замените на ваше название класса из разметки
+  1: storage_without_cubs
+  2: round_road
+  3: parking
