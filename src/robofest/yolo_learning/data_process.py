@@ -1,6 +1,6 @@
 import cv2, threading, os
 
-path = 'C:/Users/admin/Desktop/cube_photos/'
+path = 'C:/Users/admin/Desktop/wroom_wroom/'
 form = '.jpg'
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +37,7 @@ def get_rects():
     i+=1
 
 
-i = 1
+i = int(input('введите номер с которого начнётся разметка: '))
 run_thread = False
 while i<5:
     if not run_thread:
@@ -78,7 +78,7 @@ for key, value in zip(found_classes.keys(), found_classes.values()):
             norm_h = h / h_img
             print('''Выбери класс(цифру):\n0: склад с кубами(циановый с кубиками или белыми квадратами)\n1: склад для кубов(серый с цифрами)\n2: круговое движение\n3: парковка(зелёная с буквой Р)''')
             cls_name = input()
-            while cls_name not in ['1', '2', '3', '4']:
+            while cls_name not in ['1', '2', '3', '0']:
                 print('неверный номер, впиши ещё раз')
                 cls_name = input()
             print(f'в файл записано: {cls_name} {x_center:.6f} {y_center:.6f} {norm_w:.6f} {norm_h:.6f}')

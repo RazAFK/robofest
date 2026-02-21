@@ -4,9 +4,6 @@ from collections import Counter
 from robofest.classes.color_class import Mask
 from robofest.settings import settings as st
 
-def constrain(x, start, end):
-    return x if start<=x<=end else start if x<start else end
-
 def get_dominant_color(image, k=3):
     pixels = image.reshape(-1, 3)
     

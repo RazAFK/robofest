@@ -60,6 +60,9 @@ def is_right_num(num):
     return all(conditions)
 
 def handl_num(frame, reader: Reader):
+    '''
+    return: (number, color, area, cord) || None
+    '''
     nums = get_nums(frame, reader)
     ret, num = filter_nums(nums)
     if ret and is_right_num(num): return nums[0]
