@@ -161,17 +161,6 @@ class railMotor : yellowMotor {
   }
 };
 
-class IMotor {
-  public:
-  void virtual step() = 0;
-  
-};
-
-class Rail {
-  GStepper stepperHor;
-  ServoSmooth servo;
-};
-
 // переменные для сообщений
 String msg; // буфер
 int index; // индекс разделителя
