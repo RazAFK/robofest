@@ -1,15 +1,19 @@
-#include <ServoDriverSmooth.h>
-#include <ServoSmooth.h>
-#include <GyverStepper.h>
-#include <StepperCore.h>
 #include <iarduino_I2C_Software.h>
 SoftTwoWire sWire(A4, A5);
 
 #include <iarduino_I2C_Motor.h>
 
+#include <ServoDriverSmooth.h>
+#include <ServoSmooth.h>
+#include <GyverStepper.h>
+#include <StepperCore.h>
+
+// количество аргументов
+// #define ARGUMENTS_COUNT 5
+
 // пины csl и sda
-#define PIN_SCL A5
-#define PIN_SDA A4
+// #define PIN_SCL A5
+// #define PIN_SDA A4
 
 // пины сервы захвата
 #define PIN_SERVO_GRAB 0
@@ -37,12 +41,12 @@ SoftTwoWire sWire(A4, A5);
 #define VERTICAL_RAIL_MOTOR_DEFAULT_DIRECTION true
 
 // I2C адрес мотора вертикальной рейки
-#define ADDRESS_VERTICAL_RAIL_MOTOR 0
+#define ADDRESS_VERTICAL_RAIL_MOTOR 0x09
 
 // колесная база
 // характеристики моторов (на колесной базе они одинаковые)
 #define ENCODER_MAGNET_COUNT_WHEELS 7   // количество магнитов на энкодере (указывается продавцом)
-#define REDUCER_WHEELS 94.5             // передаточное число редуктора
+#define REDUCER_WHEELS 56.0             // передаточное число редуктора
 #define RADIUS_WHEELS 50.0              // радиус колеса на моторе
 // опционально обозначить скорости
 
@@ -55,8 +59,8 @@ SoftTwoWire sWire(A4, A5);
 // I2C адреса колес
 #define ADDRESS_FORWARD_RIGHT 0x0A
 #define ADDRESS_FORWARD_LEFT 0x0B
-#define ADDRESS_BACKWARD_RIGHT 0x0D
-#define ADDRESS_BACKWARD_LEFT 0x0C
+#define ADDRESS_BACKWARD_RIGHT 0x0C
+#define ADDRESS_BACKWARD_LEFT 0x0D
 
 class MessageSender {
     static const String prefixes[];
@@ -97,6 +101,8 @@ class EncoderMotor {
         motor.setReducer(reducer);
         motor.radius = wheelRadius;
         motor.setDirection(defaultDirection);
+
+        Serial.println("motor initialized");
     }
 
     void move(float speed = 0, float distance = 0);
@@ -254,7 +260,12 @@ WheelBase wheelBase(forwardRight,
 
 void setup () {
     Serial.begin(9600);
+
+    Serial.println("Setup started");
+
     sWire.begin();
+
+    Serial.println("wire have began");
 
     pinMode(PIN_SERVO_GRAB, OUTPUT);
     pinMode(PIN_SERVO_MANIPULATOR_ROTATION, OUTPUT);
@@ -277,33 +288,26 @@ void setup () {
     grabServo.attach(PIN_SERVO_GRAB);
     manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
 
-    // wheelBase.moveForward(0.5f, 1.0f);
+    wheelBase.moveForward(0.5f, 1.0f);
 
     // forwardRight.move(0.5f, 1.0f);
-    iarduino_I2C_Motor motor(0x0A);
-    motor.begin(&sWire);
-    motor.setMagnet(7);
-    motor.setReducer(56);
-    // motor.radius = 50.0;
-    // motor.setDirection(true);
-    motor.setSpeed(0.5f, MOT_M_S, 1.0f, MOT_MET);
 }
 
 String msg; // буфер для полученных сообщений
 
 void loop() {
-    railRotationServo.tick();
-    horizontalRailMotor.tick();
+    // railRotationServo.tick();
+    // horizontalRailMotor.tick();
 
-    if (Serial.available()) {
-    msg = Serial.readStringUntil('\n');
+    // if (Serial.available()) {
+    // msg = Serial.readStringUntil('\n');
 
-    Serial.println(msg);
+    // Serial.println(msg);
 
-    rail.moveHorizontalRail(msg.toInt());
+    // rail.moveHorizontalRail(msg.toInt());
 
-    // rail.rotateRail(msg.toInt());
-  }
+    // // rail.rotateRail(msg.toInt());
+//   }
 }
 //
 // методы класса EncoderMotor
@@ -407,6 +411,9 @@ void WheelBase::stop() {
 //
 static String InputMessageHandler::processMessage(String message) {
     // todo: парсинг строки и ифы для команд
+    String command;
+    // float[ARGUMENTS_COUNT] arguments = new;
+    // if ()
 }
 //
 // методы класса OutputMessageHandler

@@ -4,7 +4,11 @@ SoftTwoWire sWire(A4, A5);                                      //   Созда�
 #include <iarduino_I2C_Motor.h>                              //   Подключаем библиотеку для работы с мотором I2C-flash.
 iarduino_I2C_Motor mot(0x09);   
 
+<<<<<<< HEAD
 float reducer = 94.5; //   Объявляем объект mot для работы с функциями и методами библиотеки iarduino_I2C_Motor, указывая адрес модуля на шине I2C.
+=======
+double reducer = 99; //   Объявляем объект mot для работы с функциями и методами библиотеки iarduino_I2C_Motor, указывая адрес модуля на шине I2C.
+>>>>>>> 7514838d35b67bc08c20ea6e0d9faad8f5db901e
                                                              //   Если объявить объект без указания адреса (iarduino_I2C_Motor mot;), то адрес будет найден автоматически.
 void setup(){      
     Serial.begin(9600);
