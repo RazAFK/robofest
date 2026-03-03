@@ -25,17 +25,17 @@ void setup() {
     mot3.begin(&sWire);
     mot4.begin(&sWire);
     
-    mot1.setReducer(7);
-    mot1.setMagnet(56);
+    mot1.setReducer(56);
+    mot1.setMagnet(7);
 
-    mot2.setReducer(7);
-    mot2.setMagnet(56);
+    mot2.setReducer(56);
+    mot2.setMagnet(7);
     
-    mot3.setReducer(7);
-    mot3.setMagnet(56);
+    mot3.setReducer(56);
+    mot3.setMagnet(7);
     
-    mot4.setReducer(7);
-    mot4.setMagnet(56);
+    mot4.setReducer(56);
+    mot4.setMagnet(7);
 
     Serial.println("bebebe");
 
