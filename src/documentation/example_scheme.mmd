@@ -1,0 +1,43 @@
+%%{init: {'flowchart': {'curve': 'stepChild'}}}%%
+graph LR
+    %% Определение стилей для схемности
+    classDef redPin fill:#f00,stroke:#f00,width:8px,height:8px;
+    classDef bluePin fill:#00f,stroke:#00f,width:8px,height:8px;
+    classDef blackPin fill:#000,stroke:#000,width:8px,height:8px;
+    
+    classDef box fill:#fff,stroke:#000,stroke-width:2px;
+
+    subgraph Voltage [Voltage Source]
+        p_out(( )):::redPin
+        m_out(( )):::bluePin
+    end
+
+    subgraph Conventer [DC-DC Converter]
+        direction LR
+        conv_p_in(( )):::redPin --- conv_p_out(( )):::redPin
+        conv_m_in(( )):::bluePin --- conv_m_out(( )):::bluePin
+    end
+
+    subgraph CarMotor [Car Motor]
+        mot_p_in(( )):::redPin
+        mot_m_in(( )):::bluePin
+    end
+
+    %% Связи
+    p_out --- conv_p_in
+    m_out --- conv_m_in
+    conv_p_out --- mot_p_in
+    conv_m_out --- mot_m_in
+
+    
+    linkStyle 4,2 stroke:#f00,stroke-width:2px;
+    linkStyle 5,3 stroke:#00f,stroke-width:2px;
+    
+    linkStyle 0 stroke:#f00,stroke-width:2px;
+    linkStyle 1 stroke:#00f,stroke-width:2px;
+
+    %% Применение стиля корпуса к субграфам
+    style Voltage fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Conventer fill:#fff,stroke:#000,stroke-width:2px
+    style CarMotor fill:#fff,stroke:#000,stroke-width:2px
+

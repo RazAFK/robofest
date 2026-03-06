@@ -1,7 +1,10 @@
 #include <Wire.h>
 #include <iarduino_I2C_Motor.h>
 
-iarduino_I2C_Motor mot(0x0A); 
+iarduino_I2C_Motor motA(0x0A);
+iarduino_I2C_Motor motB(0x0B);
+iarduino_I2C_Motor motC(0x0C);
+iarduino_I2C_Motor motD(0x0D);
 
 // // Параметры вашего мотора
 // const float REDUCER = 99.0;
@@ -26,18 +29,31 @@ iarduino_I2C_Motor mot(0x0A);
 
 void setup() {
     Serial.begin(9600);
-    mot.begin();
-    // Сбрасываем настройки в 1, чтобы видеть "чистые" данные
-    mot.setMagnet(7);
-    mot.setReducer(94.5);
-    mot.changeAddress(0x09);
-    Serial.println(mot.getAddress(), HEX);
+    motA.begin();
+    motB.begin();
+    motC.begin();
+    motD.begin();
+    
+    motA.setMagnet(13);
+    motB.setMagnet(13);
+    motC.setMagnet(9);
+    motD.setMagnet(13);
+    
+    motA.setReducer(39.5f);//A 71 B 72 C 81.5f D 71
+    motB.setReducer(39.5f);//A 71 B 72 C 81.5f D 71
+    motC.setReducer(39.5f);//A 71 B 72 C 81.5f D 71
+    motD.setReducer(39.5f);//A 71 B 72 C 81.5f D 71
+    // mot.radius = 50.0f;
+    motA.setSpeed(60, MOT_RPM, 2, MOT_REV);
+    motB.setSpeed(-60, MOT_RPM, 2, MOT_REV);
+    motC.setSpeed(-60, MOT_RPM, 2, MOT_REV);
+    motD.setSpeed(-60, MOT_RPM, 2, MOT_REV);
 }
 
 void loop() {
     // Выводим текущее положение в тиках (или оборотах, которые сейчас равны тикам)
     Serial.print("Position: ");
-    Serial.println(mot.getSum(MOT_REV));
-    mot.setSpeed(100, MOT_RPM, 1, MOT_REV);
-    delay(2000);
+    Serial.println(motA.getSum(MOT_REV));
+    // mot.setSpeed(100, MOT_RPM, 1, MOT_REV);
+    // delay(2000);
 }
