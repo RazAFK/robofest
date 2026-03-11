@@ -1,19 +1,18 @@
 #include <iarduino_I2C_Software.h>
-SoftTwoWire sWire(A4, A5);
-
 #include <iarduino_I2C_Motor.h>
-
 #include <ServoDriverSmooth.h>
 #include <ServoSmooth.h>
 #include <GyverStepper.h>
 #include <StepperCore.h>
 
 // количество аргументов
-// #define ARGUMENTS_COUNT 5
+#define ARGUMENTS_COUNT 5
 
 // пины csl и sda
-// #define PIN_SCL A5
-// #define PIN_SDA A4
+#define PIN_SCL A5
+#define PIN_SDA A4
+
+#define SEPARATOR '#'
 
 // пины сервы захвата
 #define PIN_SERVO_GRAB 0
@@ -35,6 +34,7 @@ SoftTwoWire sWire(A4, A5);
 #define ENCODER_MAGNET_COUNT_VERTICAL_RAIL 0 // количество магнитов на энкодере (указывается продавцом)
 #define REDUCER_VERTICAL_RAIL 0              // передаточное число редуктора
 #define RADIUS_VERTICAL_RAIL 0.0             // радиус колеса на моторе
+#define SPEED_VERTICAL_RAIL 0.5f
 // опционально обозначить скорости
 
 // полярность (направление) мотора
@@ -62,30 +62,12 @@ SoftTwoWire sWire(A4, A5);
 #define ADDRESS_BACKWARD_RIGHT 0x0C
 #define ADDRESS_BACKWARD_LEFT 0x0D
 
-class MessageSender {
-    static const String prefixes[];
-
-    static const char separator = '#';
-
-    enum prefix {
-        RAIL,
-        WHEELS,
-        DATA
-    };
-
-    static void sendMessage(prefix p, String msg) {
-        Serial.println(prefixes[DATA] + separator + 
-                       prefixes[p] + separator + msg);
-    }
-};
-const String MessageSender::prefixes[] = {
-    "arm",
-    "whe",
-    "data"
-};
-
 class EncoderMotor {
     iarduino_I2C_Motor motor;
+
+    int timer = 0;
+
+    // bool isMoving = false;
 
     public:
     EncoderMotor(int I2CAddress, 
@@ -93,23 +75,23 @@ class EncoderMotor {
                  float reducer, 
                  float wheelRadius, 
                  bool defaultDirection,
-                 SoftTwoWire sWire) : 
+                 SoftTwoWire* sWire) : 
         motor(iarduino_I2C_Motor(I2CAddress))
     { 
-        motor.begin(&sWire);
+        motor.begin(sWire);
         motor.setMagnet(magnetsCount);
         motor.setReducer(reducer);
         motor.radius = wheelRadius;
         motor.setDirection(defaultDirection);
-
-        Serial.println("motor initialized");
     }
 
     void move(float speed = 0, float distance = 0);
+    bool checkIfStuck();
+    int getPosition();
     void stop();
 };
 
-class Rail {
+class Manipulator {
     Servo& grabServo;
     Servo& manipulatorRotationServo;
     ServoSmooth& railRotationServo;
@@ -117,7 +99,7 @@ class Rail {
     EncoderMotor& verticalRailMotor;
 
     public:
-    Rail(Servo& grabServo, 
+    Manipulator(Servo& grabServo, 
          Servo& manipulatorRotationServo, 
          ServoSmooth& railRotationServo, 
          GStepper<STEPPER2WIRE>& horizontalRailMotor, 
@@ -135,10 +117,18 @@ class Rail {
     void rotateRail(int degs);
 
     // движение манипулятора в вертикальной плоскости
-    void grab(int position = 0, int rotateServoDegrees = 90, int grabServoDegrees = 0);
-    void moveVerticalRail(int position);
-    void rotateManipulator(int deWgs);
+    void grab(int rotateServoDegrees = 90, int grabServoDegrees = 0);
+    void moveVerticalRail(bool flagIfUp);
+    void rotateManipulator(int degs);
     void grabManipulator(int degs);
+
+    // todo: написать гетеры для позиций всех компонентов
+    int getRailRotationServoDegrees();
+    int getManipulatorRotationServoDegrees();
+    int getGrabServoDegrees();
+    int getHorizontalRailMotorPosition();
+
+    bool checkIfStuck();
 };
 
 class WheelBase {
@@ -183,75 +173,100 @@ class WheelBase {
                     float speedBL, 
                     float distance);
 
+    bool checkIfStuck();
     void stop();
 
 };
 
-class InputMessageHandler {
-    static Rail* rail = nullptr;
-    static WheelBase* base = nullptr;
+class MessageHandler {
+    static Manipulator* manipulator;
+    static WheelBase* wheelBase;
+
+    static const String prefixes[];
 
     public:
-    static void setRail(Rail& r) {
-        rail = &r;
+    enum prefix {
+        RAIL,
+        WHEELS,
+        DATA
+    };
+
+    static void setManipulator(Manipulator& r) {
+        manipulator = &r;
     }
 
     static void setWheelBase(WheelBase& b) {
-        base = &b;
+        wheelBase = &b;
     }
 
-    static String processMessage(String message); // парсинг строки
+    static void sendMessage(prefix p, String msg) {
+        Serial.println(prefixes[DATA] + SEPARATOR + 
+                       prefixes[p] + SEPARATOR + msg);
+    }
 
-    static void executeCommand(String command = "stop", int argument1 = 0, int argument2 = 0); // выполнение полученной команды
+    static void processMessage(String message); // парсинг строки
+
+    static void executeCommand(String command = "stop", float* arguments = nullptr); // выполнение полученной команды
 };
+
+Manipulator* MessageHandler::manipulator = nullptr;
+WheelBase* MessageHandler::wheelBase = nullptr;
+
+const String MessageHandler::prefixes[] = {
+    "arm",
+    "whe",
+    "data"
+}; // егор дибил нормальные не придумал и переделывать не хочет
+
+SoftTwoWire sWire(PIN_SDA, PIN_SCL);
 
 Servo grabServo;
 Servo manipulatorRotationServo;
 
-ServoSmooth railRotationServo;
+// ServoSmooth railRotationServo;
 
-GStepper<STEPPER2WIRE> horizontalRailMotor(STEPPER_STEPS_PER_ROUND, 
-                                           PIN_STEPPER_STEP, 
-                                           PIN_STEPPER_DIR, 
-                                           PIN_STEPPER_ENABLE);
+// GStepper<STEPPER2WIRE> horizontalRailMotor(STEPPER_STEPS_PER_ROUND, 
+//                                            PIN_STEPPER_STEP, 
+//                                            PIN_STEPPER_DIR, 
+//                                            PIN_STEPPER_ENABLE);
 
-EncoderMotor verticalRailMotor(ADDRESS_VERTICAL_RAIL_MOTOR,
-                               ENCODER_MAGNET_COUNT_VERTICAL_RAIL,
-                               REDUCER_VERTICAL_RAIL,
-                               RADIUS_VERTICAL_RAIL,
-                               VERTICAL_RAIL_MOTOR_DEFAULT_DIRECTION,
-                               sWire);
+// EncoderMotor verticalRailMotor(ADDRESS_VERTICAL_RAIL_MOTOR,
+//                                ENCODER_MAGNET_COUNT_VERTICAL_RAIL,
+//                                REDUCER_VERTICAL_RAIL,
+//                                RADIUS_VERTICAL_RAIL,
+//                                VERTICAL_RAIL_MOTOR_DEFAULT_DIRECTION,
+//                                sWire);
 
-Rail rail(grabServo, 
-          manipulatorRotationServo, 
-          railRotationServo, 
-          horizontalRailMotor, 
-          verticalRailMotor);
+// Manipulator manipulator(grabServo, 
+//           manipulatorRotationServo, 
+//           railRotationServo, 
+//           horizontalRailMotor, 
+//           verticalRailMotor);
 
 EncoderMotor forwardRight(ADDRESS_FORWARD_RIGHT, 
                           ENCODER_MAGNET_COUNT_WHEELS,
                           REDUCER_WHEELS,
                           RADIUS_WHEELS,
                           WHEEL_DEFAULT_DIRECTION_FORWARD_RIGHT,
-                          sWire);
+                          &sWire);
 EncoderMotor forwardLeft(ADDRESS_FORWARD_LEFT, 
                          ENCODER_MAGNET_COUNT_WHEELS,
                          REDUCER_WHEELS,
                          RADIUS_WHEELS,
                          WHEEL_DEFAULT_DIRECTION_FORWARD_LEFT,
-                         sWire);
+                         &sWire);
 EncoderMotor backwardRight(ADDRESS_BACKWARD_RIGHT, 
                            ENCODER_MAGNET_COUNT_WHEELS,
                            REDUCER_WHEELS,
                            RADIUS_WHEELS,
                            WHEEL_DEFAULT_DIRECTION_BACKWARD_RIGHT,
-                           sWire);
+                           &sWire);
 EncoderMotor backwardLeft(ADDRESS_BACKWARD_LEFT, 
                           ENCODER_MAGNET_COUNT_WHEELS,
                           REDUCER_WHEELS,
                           RADIUS_WHEELS,
                           WHEEL_DEFAULT_DIRECTION_BACKWARD_LEFT,
-                          sWire);
+                          &sWire);
 
 WheelBase wheelBase(forwardRight,
                     forwardLeft,
@@ -265,6 +280,8 @@ void setup () {
 
     sWire.begin();
 
+    delay(1000); // китенок сказал для стабилизации надо
+
     Serial.println("wire have began");
 
     pinMode(PIN_SERVO_GRAB, OUTPUT);
@@ -274,21 +291,24 @@ void setup () {
     pinMode(PIN_STEPPER_ENABLE, OUTPUT);
     pinMode(PIN_STEPPER_STEP, OUTPUT);
 
-    railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 0);
-    railRotationServo.smoothStart();
-    railRotationServo.setMaxAngle(270);
-    railRotationServo.setSpeed(60);         // ограничить скорость
-    railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
-    railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
+    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 0);
+    // railRotationServo.smoothStart();
+    // railRotationServo.setMaxAngle(270);
+    // railRotationServo.setSpeed(60);         // ограничить скорость
+    // railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
+    // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
-    horizontalRailMotor.setRunMode(FOLLOW_POS);
-    horizontalRailMotor.setMaxSpeed(400);
-    horizontalRailMotor.setAcceleration(400);
+    // horizontalRailMotor.setRunMode(FOLLOW_POS);
+    // horizontalRailMotor.setMaxSpeed(400);
+    // horizontalRailMotor.setAcceleration(400);
 
     grabServo.attach(PIN_SERVO_GRAB);
     manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
 
-    wheelBase.moveForward(0.5f, 1.0f);
+    MessageHandler::setWheelBase(wheelBase);
+    // MessageHandler::setManipulator(manipulator);
+
+    // wheelBase.moveForward(0.5f, 1.0f);
 
     // forwardRight.move(0.5f, 1.0f);
 }
@@ -299,35 +319,81 @@ void loop() {
     // railRotationServo.tick();
     // horizontalRailMotor.tick();
 
-    // if (Serial.available()) {
-    // msg = Serial.readStringUntil('\n');
+    if (Serial.available()) {
+        msg = Serial.readStringUntil('\n');
 
-    // Serial.println(msg);
+        MessageHandler::processMessage(msg);
 
-    // rail.moveHorizontalRail(msg.toInt());
-
-    // // rail.rotateRail(msg.toInt());
-//   }
+        Serial.println(msg);
+    }
 }
+
 //
 // методы класса EncoderMotor
 //
 void EncoderMotor::move(float speed, float distance) {
+    motor.delSum();
     motor.setSpeed(speed, MOT_M_S, distance, MOT_MET);
 }
 
 void EncoderMotor::stop() {
     this->move(0, 0);
 }
+
+int EncoderMotor::getPosition() {
+    return motor.getSum(MOT_MET);
+}
+
+bool checkIfStuck() {
+
+}
 //
-// методы класса Rail
+// методы класса Manipulator
 //
-void Rail::rotateRail(int degs) {
+void Manipulator::moveManipulator(int manipulatorPosition, int servoDegrees) {
+    this->moveHorizontalRail(manipulatorPosition);
+    this->rotateRail(servoDegrees);
+}
+
+void Manipulator::rotateRail(int degs) {
     railRotationServo.setTargetDeg(degs);
 }
 
-void Rail::moveHorizontalRail(int position) {
-    horizontalRailMotor.setTarget(position);
+void Manipulator::moveHorizontalRail(int position) {
+    horizontalRailMotor.setTarget(position, ABSOLUTE);
+}
+
+void Manipulator::grab(int rotateServoDegrees, int grabServoDegrees) {
+    this->moveVerticalRail(true);
+    this->rotateManipulator(rotateServoDegrees);
+}
+
+void Manipulator::moveVerticalRail(bool flagIfUp) {
+    verticalRailMotor.move(SPEED_VERTICAL_RAIL * flagIfUp, MOT_M_S);
+}
+
+void Manipulator::rotateManipulator(int degs) {
+    manipulatorRotationServo.write(degs);
+}
+
+void Manipulator::grabManipulator(int degs) {
+    grabServo.write(degs);
+}
+
+int Manipulator::getGrabServoDegrees() {
+    return grabServo.read();
+}
+
+int Manipulator::getManipulatorRotationServoDegrees() {
+    return manipulatorRotationServo.read();
+}
+
+int Manipulator::getRailRotationServoDegrees() {
+    return railRotationServo.getCurrent();
+}
+
+int Manipulator::getHorizontalRailMotorPosition() {
+    return horizontalRailMotor.getCurrent();
 }
 //
 // методы класса WheelBase
@@ -338,6 +404,7 @@ void WheelBase::moveForward(float speed, float distance) {
     backwardRight.move(speed, distance);
     backwardLeft.move(speed, distance);
 }
+
 void WheelBase::moveForward(float speedFR, 
                             float speedFL, 
                             float speedBR, 
@@ -355,6 +422,7 @@ void WheelBase::moveBackward(float speed, float distance) {
     backwardRight.move(-speed, distance);
     backwardLeft.move(-speed, distance);
 }
+
 void WheelBase::moveBackward(float speedFR, 
                              float speedFL, 
                              float speedBR, 
@@ -372,6 +440,7 @@ void WheelBase::rotateRight(float speed, float distance) {
     backwardRight.move(speed, distance);
     backwardLeft.move(-speed, distance);
 }
+
 void WheelBase::rotateRight(float speedFR, 
                             float speedFL, 
                             float speedBR, 
@@ -389,6 +458,7 @@ void WheelBase::rotateLeft(float speed, float distance) {
     backwardRight.move(-speed, distance);
     backwardLeft.move(speed, distance);
 }
+
 void WheelBase::rotateLeft(float speedFR, 
                            float speedFL, 
                            float speedBR, 
@@ -407,14 +477,71 @@ void WheelBase::stop() {
     backwardLeft.stop();
 }
 //
-// методы класса InputMessageHandler
+// методы класса MessageHandler
 //
-static String InputMessageHandler::processMessage(String message) {
-    // todo: парсинг строки и ифы для команд
+void MessageHandler::processMessage(String message) {
+    int index;
     String command;
-    // float[ARGUMENTS_COUNT] arguments = new;
-    // if ()
+    float arguments[ARGUMENTS_COUNT] = {0};
+    
+    index = message.indexOf(SEPARATOR);
+
+    command = message.substring(0, index);
+    message.remove(0, index+1);
+
+    for (int i = 0; i < ARGUMENTS_COUNT; i++) {
+        index = message.indexOf(SEPARATOR);
+        if (index != -1) {
+            arguments[i] = message.substring(0, index).toFloat();
+            message.remove(0, index+1);
+        }
+        else {
+            break;
+        }
+    }
+
+    MessageHandler::executeCommand(command, arguments);
 }
-//
-// методы класса OutputMessageHandler
-//
+
+void MessageHandler::executeCommand(String command, float* arguments) {
+    //
+    // команды для колесной базы
+    //
+    if(command == "stop") {
+        MessageHandler::wheelBase->stop();
+    }
+    else if(command == "moveForward") {
+        MessageHandler::wheelBase->moveForward(arguments[0],
+                                               arguments[1],
+                                               arguments[2],
+                                               arguments[3],
+                                               arguments[4]);
+    }
+    else if(command == "moveBackward") {
+        MessageHandler::wheelBase->moveBackward(arguments[0],
+                                                arguments[1],
+                                                arguments[2],
+                                                arguments[3],
+                                                arguments[4]);
+    }
+    else if(command == "rotateRight") {
+        MessageHandler::wheelBase->rotateRight(arguments[0],
+                                               arguments[1],
+                                               arguments[2],
+                                               arguments[3],
+                                               arguments[4]);
+    }
+    else if(command == "rotateLeft") {
+        MessageHandler::wheelBase->rotateLeft(arguments[0],
+                                              arguments[1],
+                                              arguments[2],
+                                              arguments[3],
+                                              arguments[4]);
+    }
+    //
+    // команды для движения рейки
+    //
+    else if(command == "moveManipulator") {
+        MessageHandler::manipulator->moveManipulator((int)arguments[0], (int)arguments[1]);
+    }
+}
