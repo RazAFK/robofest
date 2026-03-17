@@ -36,7 +36,7 @@
 
 // передаточное число редуктора
 #define RADIUS_VERTICAL_RAIL 30.0            // радиус колеса на моторе
-#define SPEED_VERTICAL_RAIL 0.5f
+#define SPEED_VERTICAL_RAIL 0.3f
 // опционально обозначить скорости
 
 // полярность (направление) мотора
@@ -55,7 +55,7 @@
 
 // полярности (направления) колес
 #define WHEEL_DEFAULT_DIRECTION_FORWARD_RIGHT true
-#define WHEEL_DEFAULT_DIRECTION_FORWARD_LEFT true
+#define WHEEL_DEFAULT_DIRECTION_FORWARD_LEFT false
 #define WHEEL_DEFAULT_DIRECTION_BACKWARD_RIGHT true
 #define WHEEL_DEFAULT_DIRECTION_BACKWARD_LEFT false
 
@@ -68,11 +68,11 @@
 class EncoderMotor {
     iarduino_I2C_Motor motor;
 
-    int flagDefaultDirection;
+    bool flagDefaultDirection;
+
+    float tempPosition = 0;
 
     int timer = 0;
-
-    // bool isMoving = false;
 
     public:
     EncoderMotor(int I2CAddress, 
@@ -93,8 +93,8 @@ class EncoderMotor {
     }
 
     void move(float speed = 0, float distance = 0);
-    bool checkIfStuck();
-    int getPosition();
+    void stopIfStuck();
+    float getPosition();
     void stop();
 };
 
@@ -127,7 +127,7 @@ class Manipulator {
     void grab(int rotateServoDegrees = 90, int grabServoDegrees = 0);
     void moveVerticalRail(bool flagIfUp);
     void rotateManipulator(int degs);
-    void grabManipulator(int degs);
+    void rotateGrabServo(int degs);
 
     // todo: написать гетеры для позиций всех компонентов
     int getRailRotationServoDegrees();
@@ -299,26 +299,26 @@ void setup () {
     pinMode(PIN_STEPPER_ENABLE, OUTPUT);
     pinMode(PIN_STEPPER_STEP, OUTPUT);
 
-    railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 0);
-    railRotationServo.smoothStart();
-    railRotationServo.setMaxAngle(270);
-    railRotationServo.setSpeed(60);         // ограничить скорость
-    railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
-    railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
+    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 0);
+    // railRotationServo.smoothStart();
+    // railRotationServo.setMaxAngle(270);
+    // railRotationServo.setSpeed(60);         // ограничить скорость
+    // railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
+    // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
     horizontalRailMotor.setRunMode(FOLLOW_POS);
     horizontalRailMotor.setMaxSpeed(400);
     horizontalRailMotor.setAcceleration(400);
-    horizontalRailMotor.enable();
+    horizontalRailMotor.autoPower(true);
 
-    grabServo.attach(PIN_SERVO_GRAB);
-    manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
+    // grabServo.attach(PIN_SERVO_GRAB);
+    // manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
 
     forwardRight.begin(&sWire);
     forwardLeft.begin(&sWire);
     backwardRight.begin(&sWire);
     backwardLeft.begin(&sWire);
-    // verticalRailMotor.begin(&sWire);
+    verticalRailMotor.begin(&sWire);
 
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
@@ -336,6 +336,9 @@ void loop() {
     railRotationServo.tick();
     horizontalRailMotor.tick();
 
+    verticalRailMotor.stopIfStuck();
+    forwardLeft.stopIfStuck();
+
     if (Serial.available()) {
         msg = Serial.readStringUntil('\n');
 
@@ -349,28 +352,34 @@ void loop() {
 // методы класса EncoderMotor
 //
 void EncoderMotor::move(float speed, float distance) {
-    motor.delSum();
+    tempPosition = 0;
     if (!flagDefaultDirection)
     {
         motor.setSpeed(-speed, MOT_M_S, distance, MOT_MET);
         return;
     }
-        motor.setSpeed(speed, MOT_M_S, distance, MOT_MET);
+    motor.setSpeed(speed, MOT_M_S, distance, MOT_MET);
+    timer = millis();
 }
 
 void EncoderMotor::stop() {
     this->move(0, 0);
+    motor.delSum();
+    // isMoving = false;
 }
 
-int EncoderMotor::getPosition() {
+float EncoderMotor::getPosition() {
     return motor.getSum(MOT_MET);
 }
 
-bool EncoderMotor::checkIfStuck() {
-    if (millis() - timer > 500) {
+void EncoderMotor::stopIfStuck() {
+    if (millis() - timer > 500 && this->getPosition() == tempPosition) {
         this->stop();
+        tempPosition = -1;
     }
-    timer = millis();
+    else if (tempPosition != -1) {
+        tempPosition = this->getPosition();
+    }
 }
 //
 // методы класса Manipulator
@@ -401,7 +410,7 @@ void Manipulator::rotateManipulator(int degs) {
     manipulatorRotationServo.write(degs);
 }
 
-void Manipulator::grabManipulator(int degs) {
+void Manipulator::rotateGrabServo(int degs) {
     grabServo.write(degs);
 }
 
@@ -564,19 +573,51 @@ void MessageHandler::executeCommand(String command, float* arguments) {
                                               arguments[4]);
     }
     // else if (command == "getWheelsPositions") {
-    //     MessageHandler::sendMessage(MessageHandler::prefix.WHEELS, 
+    //     MessageHandler::sendMessage(MessageHandler::prefix::WHEELS, 
     //                                 {forwardRight.getPosition(),
     //                                  forwardLeft.getPosition(),
     //                                  backwardRight.getPosition(),
     //                                  backwardLeft.getPosition()});
     // }
     //
-    // команды для движения рейки
+    // команды для движения манипулятора
     //
     else if (command == "moveManipulator") {
         MessageHandler::manipulator->moveManipulator((int)arguments[0], (int)arguments[1]);
     }
     else if (command == "rotateManipulator") {
         MessageHandler::manipulator->rotateManipulator((int)arguments[0]);
+    }
+    else if (command == "rotateHorizontalRail") {
+        MessageHandler::manipulator->rotateRail((int)arguments[0]);
+    }
+    else if (command == "rotateGrabServo") {
+        MessageHandler::manipulator->rotateGrabServo((int)arguments[0]);
+    }
+    else if (command == "moveHorizontalRail") {
+        MessageHandler::manipulator->moveHorizontalRail((int)arguments[0]);
+    }
+    else if (command == "moveVerticalRail") {
+        MessageHandler::manipulator->moveVerticalRail((bool)arguments[0]);
+    }
+    else if (command == "getHorizontalPosition") {
+        String args[1] = {String(MessageHandler::manipulator->getHorizontalRailMotorPosition())};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    args);
+    }
+    else if (command == "getRailServoDegrees") {
+        String args[1] = {String(MessageHandler::manipulator->getRailRotationServoDegrees())};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    args);
+    }
+    else if (command == "getManipulatorServoDegrees") {
+        String args[1] = {String(MessageHandler::manipulator->getManipulatorRotationServoDegrees())};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    args);
+    }
+    else if (command == "getGrabServoDegrees") {
+        String args[1] = {String(MessageHandler::manipulator->getGrabServoDegrees())};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    args);
     }
 }
