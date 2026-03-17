@@ -6,126 +6,126 @@ graph LR
     classDef box fill:#fff,stroke:#000,stroke-width:2px;
 
 subgraph power_unit [power_unit]
-		power_unitplus(( plus ))
-		power_unitminus(( minus ))
+		power_unit_plus(( plus ))
+		power_unit_minus(( minus ))
 	end
 
 subgraph front_right [front_right]
-		front_rightarduino_v(( arduino_v ))
-		front_rightground(( ground ))
-		front_rightm_minus(( m_minus ))
-		front_rightm_plus(( m_plus ))
-		front_rightpin_a(( pin_a ))
-		front_rightpin_b(( pin_b ))
+		front_right_arduino_v(( arduino_v ))
+		front_right_ground(( ground ))
+		front_right_m_minus(( m_minus ))
+		front_right_m_plus(( m_plus ))
+		front_right_pin_a(( pin_a ))
+		front_right_pin_b(( pin_b ))
 	end
 
 subgraph front_left [front_left]
-		front_leftarduino_v(( arduino_v ))
-		front_leftground(( ground ))
-		front_leftm_minus(( m_minus ))
-		front_leftm_plus(( m_plus ))
-		front_leftpin_a(( pin_a ))
-		front_leftpin_b(( pin_b ))
+		front_left_arduino_v(( arduino_v ))
+		front_left_ground(( ground ))
+		front_left_m_minus(( m_minus ))
+		front_left_m_plus(( m_plus ))
+		front_left_pin_a(( pin_a ))
+		front_left_pin_b(( pin_b ))
 	end
 
 subgraph back_right [back_right]
-		back_rightarduino_v(( arduino_v ))
-		back_rightground(( ground ))
-		back_rightm_minus(( m_minus ))
-		back_rightm_plus(( m_plus ))
-		back_rightpin_a(( pin_a ))
-		back_rightpin_b(( pin_b ))
+		back_right_arduino_v(( arduino_v ))
+		back_right_ground(( ground ))
+		back_right_m_minus(( m_minus ))
+		back_right_m_plus(( m_plus ))
+		back_right_pin_a(( pin_a ))
+		back_right_pin_b(( pin_b ))
 	end
 
 subgraph back_left [back_left]
-		back_leftarduino_v(( arduino_v ))
-		back_leftground(( ground ))
-		back_leftm_minus(( m_minus ))
-		back_leftm_plus(( m_plus ))
-		back_leftpin_a(( pin_a ))
-		back_leftpin_b(( pin_b ))
+		back_left_arduino_v(( arduino_v ))
+		back_left_ground(( ground ))
+		back_left_m_minus(( m_minus ))
+		back_left_m_plus(( m_plus ))
+		back_left_pin_a(( pin_a ))
+		back_left_pin_b(( pin_b ))
 	end
 
 subgraph flash_A [flash_A]
-		flash_Aarduino_v_in(( arduino_v_in ))
-		flash_Aground_in(( ground_in ))
-		flash_Ascl(( scl ))
-		flash_Asda(( sda ))
-		flash_Aarduino_v_out(( arduino_v_out )) --- front_rightarduino_v(( front_rightarduino_v ))
-		flash_Aground_out(( ground_out )) --- front_rightground(( front_rightground ))
-		flash_Aplus_12v(( plus_12v )) --- front_rightm_plus(( front_rightm_plus ))
-		flash_Aminus_12v(( minus_12v )) --- front_rightm_minus(( front_rightm_minus ))
-		flash_Apin_a(( pin_a )) --- front_rightpin_a(( front_rightpin_a ))
-		flash_Apin_b(( pin_b )) --- front_rightpin_b(( front_rightpin_b ))
+		flash_A_arduino_v_in(( arduino_v_in ))
+		flash_A_ground_in(( ground_in ))
+		flash_A_scl(( scl ))
+		flash_A_sda(( sda ))
+		flash_A_arduino_v_out(( arduino_v_out )) --- front_right_arduino_v(( front_right_arduino_v ))
+		flash_A_ground_out(( ground_out )) --- front_right_ground(( front_right_ground ))
+		flash_A_plus_12v(( plus_12v )) --- front_right_m_plus(( front_right_m_plus ))
+		flash_A_minus_12v(( minus_12v )) --- front_right_m_minus(( front_right_m_minus ))
+		flash_A_pin_a(( pin_a )) --- front_right_pin_a(( front_right_pin_a ))
+		flash_A_pin_b(( pin_b )) --- front_right_pin_b(( front_right_pin_b ))
 	end
 
-subgraph flash_A [flash_A]
-		flash_Aarduino_v_in(( arduino_v_in ))
-		flash_Aground_in(( ground_in ))
-		flash_Ascl(( scl ))
-		flash_Asda(( sda ))
-		flash_Aarduino_v_out(( arduino_v_out )) --- front_leftarduino_v(( front_leftarduino_v ))
-		flash_Aground_out(( ground_out )) --- front_leftground(( front_leftground ))
-		flash_Aplus_12v(( plus_12v )) --- front_leftm_plus(( front_leftm_plus ))
-		flash_Aminus_12v(( minus_12v )) --- front_leftm_minus(( front_leftm_minus ))
-		flash_Apin_a(( pin_a )) --- front_leftpin_a(( front_leftpin_a ))
-		flash_Apin_b(( pin_b )) --- front_leftpin_b(( front_leftpin_b ))
+subgraph flash_B [flash_B]
+		flash_B_arduino_v_in(( arduino_v_in ))
+		flash_B_ground_in(( ground_in ))
+		flash_B_scl(( scl ))
+		flash_B_sda(( sda ))
+		flash_B_arduino_v_out(( arduino_v_out )) --- front_left_arduino_v(( front_left_arduino_v ))
+		flash_B_ground_out(( ground_out )) --- front_left_ground(( front_left_ground ))
+		flash_B_plus_12v(( plus_12v )) --- front_left_m_plus(( front_left_m_plus ))
+		flash_B_minus_12v(( minus_12v )) --- front_left_m_minus(( front_left_m_minus ))
+		flash_B_pin_a(( pin_a )) --- front_left_pin_a(( front_left_pin_a ))
+		flash_B_pin_b(( pin_b )) --- front_left_pin_b(( front_left_pin_b ))
 	end
 
-subgraph flash_A [flash_A]
-		flash_Aarduino_v_in(( arduino_v_in ))
-		flash_Aground_in(( ground_in ))
-		flash_Ascl(( scl ))
-		flash_Asda(( sda ))
-		flash_Aarduino_v_out(( arduino_v_out )) --- back_rightarduino_v(( back_rightarduino_v ))
-		flash_Aground_out(( ground_out )) --- back_rightground(( back_rightground ))
-		flash_Aplus_12v(( plus_12v )) --- back_rightm_plus(( back_rightm_plus ))
-		flash_Aminus_12v(( minus_12v )) --- back_rightm_minus(( back_rightm_minus ))
-		flash_Apin_a(( pin_a )) --- back_rightpin_a(( back_rightpin_a ))
-		flash_Apin_b(( pin_b )) --- back_rightpin_b(( back_rightpin_b ))
+subgraph flash_C [flash_C]
+		flash_C_arduino_v_in(( arduino_v_in ))
+		flash_C_ground_in(( ground_in ))
+		flash_C_scl(( scl ))
+		flash_C_sda(( sda ))
+		flash_C_arduino_v_out(( arduino_v_out )) --- back_right_arduino_v(( back_right_arduino_v ))
+		flash_C_ground_out(( ground_out )) --- back_right_ground(( back_right_ground ))
+		flash_C_plus_12v(( plus_12v )) --- back_right_m_plus(( back_right_m_plus ))
+		flash_C_minus_12v(( minus_12v )) --- back_right_m_minus(( back_right_m_minus ))
+		flash_C_pin_a(( pin_a )) --- back_right_pin_a(( back_right_pin_a ))
+		flash_C_pin_b(( pin_b )) --- back_right_pin_b(( back_right_pin_b ))
 	end
 
-subgraph flash_A [flash_A]
-		flash_Aarduino_v_in(( arduino_v_in ))
-		flash_Aground_in(( ground_in ))
-		flash_Ascl(( scl ))
-		flash_Asda(( sda ))
-		flash_Aarduino_v_out(( arduino_v_out )) --- back_leftarduino_v(( back_leftarduino_v ))
-		flash_Aground_out(( ground_out )) --- back_leftground(( back_leftground ))
-		flash_Aplus_12v(( plus_12v )) --- back_leftm_plus(( back_leftm_plus ))
-		flash_Aminus_12v(( minus_12v )) --- back_leftm_minus(( back_leftm_minus ))
-		flash_Apin_a(( pin_a )) --- back_leftpin_a(( back_leftpin_a ))
-		flash_Apin_b(( pin_b )) --- back_leftpin_b(( back_leftpin_b ))
+subgraph flash_D [flash_D]
+		flash_D_arduino_v_in(( arduino_v_in ))
+		flash_D_ground_in(( ground_in ))
+		flash_D_scl(( scl ))
+		flash_D_sda(( sda ))
+		flash_D_arduino_v_out(( arduino_v_out )) --- back_left_arduino_v(( back_left_arduino_v ))
+		flash_D_ground_out(( ground_out )) --- back_left_ground(( back_left_ground ))
+		flash_D_plus_12v(( plus_12v )) --- back_left_m_plus(( back_left_m_plus ))
+		flash_D_minus_12v(( minus_12v )) --- back_left_m_minus(( back_left_m_minus ))
+		flash_D_pin_a(( pin_a )) --- back_left_pin_a(( back_left_pin_a ))
+		flash_D_pin_b(( pin_b )) --- back_left_pin_b(( back_left_pin_b ))
 	end
 
 subgraph i2c_bus [i2c_bus]
-		i2c_busarduino_v_in(( arduino_v_in ))
-		i2c_busground_in(( ground_in ))
-		i2c_busscl_in(( scl_in ))
-		i2c_bussda_in(( sda_in ))
-		i2c_busv_out_1(( v_out_1 )) --- flash_ANone(( flash_ANone ))
-		i2c_busg_out_1(( g_out_1 )) --- flash_ANone(( flash_ANone ))
-		i2c_busscl_out_1(( scl_out_1 )) --- flash_ANone(( flash_ANone ))
-		i2c_bussda_out_1(( sda_out_1 )) --- flash_ANone(( flash_ANone ))
-		i2c_busv_out_2(( v_out_2 )) --- flash_ANone(( flash_ANone ))
-		i2c_busg_out_2(( g_out_2 )) --- flash_ANone(( flash_ANone ))
-		i2c_busscl_out_2(( scl_out_2 )) --- flash_ANone(( flash_ANone ))
-		i2c_bussda_out_2(( sda_out_2 )) --- flash_ANone(( flash_ANone ))
-		i2c_busv_out_3(( v_out_3 )) --- flash_ANone(( flash_ANone ))
-		i2c_busg_out_3(( g_out_3 )) --- flash_ANone(( flash_ANone ))
-		i2c_busscl_out_3(( scl_out_3 )) --- flash_ANone(( flash_ANone ))
-		i2c_bussda_out_3(( sda_out_3 )) --- flash_ANone(( flash_ANone ))
-		i2c_busv_out_4(( v_out_4 )) --- flash_ANone(( flash_ANone ))
-		i2c_busg_out_4(( g_out_4 )) --- flash_ANone(( flash_ANone ))
-		i2c_busscl_out_4(( scl_out_4 )) --- flash_ANone(( flash_ANone ))
-		i2c_bussda_out_4(( sda_out_4 )) --- flash_ANone(( flash_ANone ))
+		i2c_bus_arduino_v_in(( arduino_v_in ))
+		i2c_bus_ground_in(( ground_in ))
+		i2c_bus_scl_in(( scl_in ))
+		i2c_bus_sda_in(( sda_in ))
+		i2c_bus_v_out_1(( v_out_1 )) --- flash_A_None(( flash_A_None ))
+		i2c_bus_g_out_1(( g_out_1 )) --- flash_A_None(( flash_A_None ))
+		i2c_bus_scl_out_1(( scl_out_1 )) --- flash_A_None(( flash_A_None ))
+		i2c_bus_sda_out_1(( sda_out_1 )) --- flash_A_None(( flash_A_None ))
+		i2c_bus_v_out_2(( v_out_2 )) --- flash_B_None(( flash_B_None ))
+		i2c_bus_g_out_2(( g_out_2 )) --- flash_B_None(( flash_B_None ))
+		i2c_bus_scl_out_2(( scl_out_2 )) --- flash_B_None(( flash_B_None ))
+		i2c_bus_sda_out_2(( sda_out_2 )) --- flash_B_None(( flash_B_None ))
+		i2c_bus_v_out_3(( v_out_3 )) --- flash_C_None(( flash_C_None ))
+		i2c_bus_g_out_3(( g_out_3 )) --- flash_C_None(( flash_C_None ))
+		i2c_bus_scl_out_3(( scl_out_3 )) --- flash_C_None(( flash_C_None ))
+		i2c_bus_sda_out_3(( sda_out_3 )) --- flash_C_None(( flash_C_None ))
+		i2c_bus_v_out_4(( v_out_4 )) --- flash_D_None(( flash_D_None ))
+		i2c_bus_g_out_4(( g_out_4 )) --- flash_D_None(( flash_D_None ))
+		i2c_bus_scl_out_4(( scl_out_4 )) --- flash_D_None(( flash_D_None ))
+		i2c_bus_sda_out_4(( sda_out_4 )) --- flash_D_None(( flash_D_None ))
 	end
 
 subgraph arduino_nano [arduino_nano]
-		arduino_nanoarduino_v(( arduino_v )) --- i2c_busNone(( i2c_busNone ))
-		arduino_nanoground(( ground )) --- i2c_busNone(( i2c_busNone ))
-		arduino_nanoA5(( A5 )) --- i2c_busNone(( i2c_busNone ))
-		arduino_nanoA4(( A4 )) --- i2c_busNone(( i2c_busNone ))
+		arduino_nano_arduino_v(( arduino_v )) --- i2c_bus_None(( i2c_bus_None ))
+		arduino_nano_ground(( ground )) --- i2c_bus_None(( i2c_bus_None ))
+		arduino_nano_A5(( A5 )) --- i2c_bus_None(( i2c_bus_None ))
+		arduino_nano_A4(( A4 )) --- i2c_bus_None(( i2c_bus_None ))
 	end
 
 
@@ -138,27 +138,10 @@ subgraph arduino_nano [arduino_nano]
 
 
 
-    subgraph Voltage [Voltage Source]
-        p_out(( +V )):::redPin
-        m_out(( -V )):::bluePin
-    end
-
-    subgraph Conventer [DC-DC Converter]
-        direction LR
-        conv_p_in(( )):::redPin ~~~ conv_p_out(( )):::redPin
-        conv_m_in(( )):::bluePin ~~~ conv_m_out(( )):::bluePin
-    end
-
-    subgraph CarMotor [Car Motor]
-        mot_p_in(( )):::redPin
-        mot_m_in(( )):::bluePin
-    end
-
-    
-    p_out --- conv_p_in
-    m_out --- conv_m_in
-    conv_p_out --- mot_p_in
-    conv_m_out --- mot_m_in
+arduino_nano_arduino_v --- i2c_bus_None
+arduino_nano_ground --- i2c_bus_None
+arduino_nano_A5 --- i2c_bus_None
+arduino_nano_A4 --- i2c_bus_None
 
     
     linkStyle 2 stroke:#f00,stroke-width:2px;
@@ -166,8 +149,3 @@ subgraph arduino_nano [arduino_nano]
     
     linkStyle 0 stroke:#f00,stroke-width:2px;
     linkStyle 1 stroke:#00f,stroke-width:2px;
-
-    
-    style Voltage fill:#f9f9f9,stroke:#333,stroke-width:2px
-    style Conventer fill:#fff,stroke:#000,stroke-width:2px
-    style CarMotor fill:#fff,stroke:#000,stroke-width:2px

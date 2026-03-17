@@ -211,58 +211,58 @@ dr_f_a = Element(Driver.flash+Driver.Adress_flash.A, {
     Driver.flash.Pins_flash.scl: 'None',
     Driver.flash.Pins_flash.sda: 'None',
 
-    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_a.name + Motor.Pins.arduino_v,
-    Driver.flash.Pins_flash.ground_out: mot_dr_f_a.name + Motor.Pins.ground,
-    Driver.flash.Pins_flash.plus_12v: mot_dr_f_a.name + Motor.Pins.m_plus,
-    Driver.flash.Pins_flash.minus_12v: mot_dr_f_a.name + Motor.Pins.m_minus,
-    Driver.flash.Pins_flash.pin_a: mot_dr_f_a.name + Motor.Pins.pin_a,
-    Driver.flash.Pins_flash.pin_b: mot_dr_f_a.name + Motor.Pins.pin_b,   
+    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_a.name + '_'  + Motor.Pins.arduino_v,
+    Driver.flash.Pins_flash.ground_out: mot_dr_f_a.name + '_'  + Motor.Pins.ground,
+    Driver.flash.Pins_flash.plus_12v: mot_dr_f_a.name + '_'  + Motor.Pins.m_plus,
+    Driver.flash.Pins_flash.minus_12v: mot_dr_f_a.name + '_'  + Motor.Pins.m_minus,
+    Driver.flash.Pins_flash.pin_a: mot_dr_f_a.name + '_'  + Motor.Pins.pin_a,
+    Driver.flash.Pins_flash.pin_b: mot_dr_f_a.name + '_'  + Motor.Pins.pin_b,   
 })
 
 mot_dr_f_b = fl
-dr_f_b = Element(Driver.flash+Driver.Adress_flash.A, {
+dr_f_b = Element(Driver.flash+Driver.Adress_flash.B, {
     Driver.flash.Pins_flash.arduino_v_in: 'None',
     Driver.flash.Pins_flash.ground_in: 'None',
     Driver.flash.Pins_flash.scl: 'None',
     Driver.flash.Pins_flash.sda: 'None',
 
-    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_b.name + Motor.Pins.arduino_v,
-    Driver.flash.Pins_flash.ground_out: mot_dr_f_b.name + Motor.Pins.ground,
-    Driver.flash.Pins_flash.plus_12v: mot_dr_f_b.name + Motor.Pins.m_plus,
-    Driver.flash.Pins_flash.minus_12v: mot_dr_f_b.name + Motor.Pins.m_minus,
-    Driver.flash.Pins_flash.pin_a: mot_dr_f_b.name + Motor.Pins.pin_a,
-    Driver.flash.Pins_flash.pin_b: mot_dr_f_b.name + Motor.Pins.pin_b,   
+    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_b.name + '_'  + Motor.Pins.arduino_v,
+    Driver.flash.Pins_flash.ground_out: mot_dr_f_b.name + '_'  + Motor.Pins.ground,
+    Driver.flash.Pins_flash.plus_12v: mot_dr_f_b.name + '_'  + Motor.Pins.m_plus,
+    Driver.flash.Pins_flash.minus_12v: mot_dr_f_b.name + '_'  + Motor.Pins.m_minus,
+    Driver.flash.Pins_flash.pin_a: mot_dr_f_b.name + '_'  + Motor.Pins.pin_a,
+    Driver.flash.Pins_flash.pin_b: mot_dr_f_b.name + '_'  + Motor.Pins.pin_b,   
 })
 
 mot_dr_f_c = br
-dr_f_c = Element(Driver.flash+Driver.Adress_flash.A, {
+dr_f_c = Element(Driver.flash+Driver.Adress_flash.C, {
     Driver.flash.Pins_flash.arduino_v_in: 'None',
     Driver.flash.Pins_flash.ground_in: 'None',
     Driver.flash.Pins_flash.scl: 'None',
     Driver.flash.Pins_flash.sda: 'None',
 
-    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_c.name + Motor.Pins.arduino_v,
-    Driver.flash.Pins_flash.ground_out: mot_dr_f_c.name + Motor.Pins.ground,
-    Driver.flash.Pins_flash.plus_12v: mot_dr_f_c.name + Motor.Pins.m_plus,
-    Driver.flash.Pins_flash.minus_12v: mot_dr_f_c.name + Motor.Pins.m_minus,
-    Driver.flash.Pins_flash.pin_a: mot_dr_f_c.name + Motor.Pins.pin_a,
-    Driver.flash.Pins_flash.pin_b: mot_dr_f_c.name + Motor.Pins.pin_b,   
+    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_c.name + '_'  + Motor.Pins.arduino_v,
+    Driver.flash.Pins_flash.ground_out: mot_dr_f_c.name + '_'  + Motor.Pins.ground,
+    Driver.flash.Pins_flash.plus_12v: mot_dr_f_c.name + '_'  + Motor.Pins.m_plus,
+    Driver.flash.Pins_flash.minus_12v: mot_dr_f_c.name + '_'  + Motor.Pins.m_minus,
+    Driver.flash.Pins_flash.pin_a: mot_dr_f_c.name + '_'  + Motor.Pins.pin_a,
+    Driver.flash.Pins_flash.pin_b: mot_dr_f_c.name + '_'  + Motor.Pins.pin_b,   
 })
 
 mot_dr_f_d = bl
-dr_f_d = Element(Driver.flash+Driver.Adress_flash.A, {
+dr_f_d = Element(Driver.flash+Driver.Adress_flash.D, {
     Driver.flash.Pins_flash.arduino_v_in: 'None',
     Driver.flash.Pins_flash.ground_in: 'None',
     Driver.flash.Pins_flash.scl: 'None',
     Driver.flash.Pins_flash.sda: 'None',
         
 
-    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_d.name + Motor.Pins.arduino_v,
-    Driver.flash.Pins_flash.ground_out: mot_dr_f_d.name + Motor.Pins.ground,
-    Driver.flash.Pins_flash.plus_12v: mot_dr_f_d.name + Motor.Pins.m_plus,
-    Driver.flash.Pins_flash.minus_12v: mot_dr_f_d.name + Motor.Pins.m_minus,
-    Driver.flash.Pins_flash.pin_a: mot_dr_f_d.name + Motor.Pins.pin_a,
-    Driver.flash.Pins_flash.pin_b: mot_dr_f_d.name + Motor.Pins.pin_b,   
+    Driver.flash.Pins_flash.arduino_v_out: mot_dr_f_d.name + '_'  + Motor.Pins.arduino_v,
+    Driver.flash.Pins_flash.ground_out: mot_dr_f_d.name + '_'  + Motor.Pins.ground,
+    Driver.flash.Pins_flash.plus_12v: mot_dr_f_d.name + '_'  + Motor.Pins.m_plus,
+    Driver.flash.Pins_flash.minus_12v: mot_dr_f_d.name + '_'  + Motor.Pins.m_minus,
+    Driver.flash.Pins_flash.pin_a: mot_dr_f_d.name + '_'  + Motor.Pins.pin_a,
+    Driver.flash.Pins_flash.pin_b: mot_dr_f_d.name + '_'  + Motor.Pins.pin_b,   
 })
 
 i2c_bus = Element(Bus.i2c_bus, {
@@ -271,32 +271,32 @@ i2c_bus = Element(Bus.i2c_bus, {
     Bus.Pins_i2c.scl['in']: 'None',
     Bus.Pins_i2c.sda['in']: 'None',
 
-    Bus.Pins_i2c.arduino_v[1]: dr_f_a.name + dr_f_a.con[Driver.flash.Pins_flash.arduino_v_in],
-    Bus.Pins_i2c.ground[1]: dr_f_a.name + dr_f_a.con[Driver.flash.Pins_flash.ground_in],
-    Bus.Pins_i2c.scl[1]: dr_f_a.name + dr_f_a.con[Driver.flash.Pins_flash.scl],
-    Bus.Pins_i2c.sda[1]: dr_f_a.name + dr_f_a.con[Driver.flash.Pins_flash.sda],
+    Bus.Pins_i2c.arduino_v[1]: dr_f_a.name + '_'  + dr_f_a.con[Driver.flash.Pins_flash.arduino_v_in],
+    Bus.Pins_i2c.ground[1]: dr_f_a.name + '_'  + dr_f_a.con[Driver.flash.Pins_flash.ground_in],
+    Bus.Pins_i2c.scl[1]: dr_f_a.name + '_'  + dr_f_a.con[Driver.flash.Pins_flash.scl],
+    Bus.Pins_i2c.sda[1]: dr_f_a.name + '_'  + dr_f_a.con[Driver.flash.Pins_flash.sda],
 
-    Bus.Pins_i2c.arduino_v[2]: dr_f_b.name + dr_f_b.con[Driver.flash.Pins_flash.arduino_v_in],
-    Bus.Pins_i2c.ground[2]: dr_f_b.name + dr_f_b.con[Driver.flash.Pins_flash.ground_in],
-    Bus.Pins_i2c.scl[2]: dr_f_b.name + dr_f_b.con[Driver.flash.Pins_flash.scl],
-    Bus.Pins_i2c.sda[2]: dr_f_b.name + dr_f_b.con[Driver.flash.Pins_flash.sda],
+    Bus.Pins_i2c.arduino_v[2]: dr_f_b.name + '_'  + dr_f_b.con[Driver.flash.Pins_flash.arduino_v_in],
+    Bus.Pins_i2c.ground[2]: dr_f_b.name + '_'  + dr_f_b.con[Driver.flash.Pins_flash.ground_in],
+    Bus.Pins_i2c.scl[2]: dr_f_b.name + '_'  + dr_f_b.con[Driver.flash.Pins_flash.scl],
+    Bus.Pins_i2c.sda[2]: dr_f_b.name + '_'  + dr_f_b.con[Driver.flash.Pins_flash.sda],
 
-    Bus.Pins_i2c.arduino_v[3]: dr_f_c.name + dr_f_c.con[Driver.flash.Pins_flash.arduino_v_in],
-    Bus.Pins_i2c.ground[3]: dr_f_c.name + dr_f_c.con[Driver.flash.Pins_flash.ground_in],
-    Bus.Pins_i2c.scl[3]: dr_f_c.name + dr_f_c.con[Driver.flash.Pins_flash.scl],
-    Bus.Pins_i2c.sda[3]: dr_f_c.name + dr_f_c.con[Driver.flash.Pins_flash.sda],
+    Bus.Pins_i2c.arduino_v[3]: dr_f_c.name + '_'  + dr_f_c.con[Driver.flash.Pins_flash.arduino_v_in],
+    Bus.Pins_i2c.ground[3]: dr_f_c.name + '_'  + dr_f_c.con[Driver.flash.Pins_flash.ground_in],
+    Bus.Pins_i2c.scl[3]: dr_f_c.name + '_'  + dr_f_c.con[Driver.flash.Pins_flash.scl],
+    Bus.Pins_i2c.sda[3]: dr_f_c.name + '_'  + dr_f_c.con[Driver.flash.Pins_flash.sda],
 
-    Bus.Pins_i2c.arduino_v[4]: dr_f_d.name + dr_f_d.con[Driver.flash.Pins_flash.arduino_v_in],
-    Bus.Pins_i2c.ground[4]: dr_f_d.name + dr_f_d.con[Driver.flash.Pins_flash.ground_in],
-    Bus.Pins_i2c.scl[4]: dr_f_d.name + dr_f_d.con[Driver.flash.Pins_flash.scl],
-    Bus.Pins_i2c.sda[4]: dr_f_d.name + dr_f_d.con[Driver.flash.Pins_flash.sda],
+    Bus.Pins_i2c.arduino_v[4]: dr_f_d.name + '_'  + dr_f_d.con[Driver.flash.Pins_flash.arduino_v_in],
+    Bus.Pins_i2c.ground[4]: dr_f_d.name + '_'  + dr_f_d.con[Driver.flash.Pins_flash.ground_in],
+    Bus.Pins_i2c.scl[4]: dr_f_d.name + '_'  + dr_f_d.con[Driver.flash.Pins_flash.scl],
+    Bus.Pins_i2c.sda[4]: dr_f_d.name + '_'  + dr_f_d.con[Driver.flash.Pins_flash.sda],
 })
 
 arduino = Element(Arduino.name, {
-    Arduino.Pins.arduino_v: i2c_bus.name + i2c_bus.con[Bus.Pins_i2c.arduino_v['in']],
-    Arduino.Pins.ground: i2c_bus.name + i2c_bus.con[Bus.Pins_i2c.ground['in']],
-    Arduino.Pins.scl: i2c_bus.name + i2c_bus.con[Bus.Pins_i2c.scl['in']],
-    Arduino.Pins.sda: i2c_bus.name + i2c_bus.con[Bus.Pins_i2c.sda['in']],
+    Arduino.Pins.arduino_v: i2c_bus.name + '_'  + i2c_bus.con[Bus.Pins_i2c.arduino_v['in']],
+    Arduino.Pins.ground: i2c_bus.name + '_'  + i2c_bus.con[Bus.Pins_i2c.ground['in']],
+    Arduino.Pins.scl: i2c_bus.name + '_'  + i2c_bus.con[Bus.Pins_i2c.scl['in']],
+    Arduino.Pins.sda: i2c_bus.name + '_'  + i2c_bus.con[Bus.Pins_i2c.sda['in']],
 })
 
 elements = [power, fr, fl, br, bl, dr_f_a, dr_f_b, dr_f_c, dr_f_d, i2c_bus, arduino]
@@ -304,7 +304,7 @@ elements = [power, fr, fl, br, bl, dr_f_a, dr_f_b, dr_f_c, dr_f_d, i2c_bus, ardu
 def subgraph(elem: Element):
     ret = f'subgraph {elem.name} [{elem.name}]\n'
     for key, value in elem.con.items():
-        pin = f'\t\t{elem.name + key}(( {key} ))'
+        pin = f'\t\t{elem.name + '_' + key}(( {key} ))'
         if value != 'None':
             pin += f' --- {value}(( {value} ))'
         ret += f'{pin}\n'
@@ -315,7 +315,7 @@ def link(elem: Element):
     ret = ''
     for key, value in elem.con.items():
         if value == 'None': continue
-        pin = f'{elem.name + key} --- {value}'
+        pin = f'{elem.name + '_' + key} --- {value}'
         ret += f'{pin}\n'
     return ret
 
@@ -341,37 +341,11 @@ f'''
 
 {link(bl)}
 
-    subgraph Voltage [Voltage Source]
-        p_out(( +V )):::redPin
-        m_out(( -V )):::bluePin
-    end
-
-    subgraph Conventer [DC-DC Converter]
-        direction LR
-        conv_p_in(( )):::redPin ~~~ conv_p_out(( )):::redPin
-        conv_m_in(( )):::bluePin ~~~ conv_m_out(( )):::bluePin
-    end
-
-    subgraph CarMotor [Car Motor]
-        mot_p_in(( )):::redPin
-        mot_m_in(( )):::bluePin
-    end
-
-    
-    p_out --- conv_p_in
-    m_out --- conv_m_in
-    conv_p_out --- mot_p_in
-    conv_m_out --- mot_m_in
-
+{link(arduino)}
     
     linkStyle 2 stroke:#f00,stroke-width:2px;
     linkStyle 3 stroke:#00f,stroke-width:2px;
     
     linkStyle 0 stroke:#f00,stroke-width:2px;
     linkStyle 1 stroke:#00f,stroke-width:2px;
-
-    
-    style Voltage fill:#f9f9f9,stroke:#333,stroke-width:2px
-    style Conventer fill:#fff,stroke:#000,stroke-width:2px
-    style CarMotor fill:#fff,stroke:#000,stroke-width:2px
 ''')

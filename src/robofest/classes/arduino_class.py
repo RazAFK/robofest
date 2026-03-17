@@ -26,7 +26,7 @@ class Object:
 class Arduino:
 
     def convert_command(self, name, *args):
-        return name + st.separator + st.separator.join(list(map(str, args)))
+        return name + st.separator + st.separator.join(list(map(str, args))) + st.separator
     
     def __init__(self, port: str, baudrate=st.arduino_baudrate, timeout=st.arduino_timeout):
         self.port = port
