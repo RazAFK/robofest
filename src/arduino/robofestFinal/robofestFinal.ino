@@ -98,6 +98,34 @@ class EncoderMotor {
     void stop();
 };
 
+class StepperMotor {
+    int pinStep;
+    int pinDir;
+    int pinEn;
+
+    int targetPosition = 0;
+    int currentPosition = 0;
+
+    public:
+
+    StepperMotor(int step, int dir, int en) :
+    pinStep(step),
+    pinDir(dir),
+    pinEn(en) {}
+
+    void enable();
+    void disable();
+
+    int getCurrentPosition();
+    int getTargetPosition();
+    void setCurrentPosition(int position);
+    void setTargetPosition(int position);
+
+    void stop();
+    void step();
+
+}
+
 class Manipulator {
     Servo& grabServo;
     Servo& manipulatorRotationServo;
@@ -286,6 +314,8 @@ void setup () {
 
     Serial.println("Setup started");
 
+    delay(500);
+
     sWire.begin();
 
     delay(1000); // китенок сказал для стабилизации надо
@@ -306,10 +336,11 @@ void setup () {
     // railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
     // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
+    horizontalRailMotor.invertEn(true);
+    horizontalRailMotor.autoPower(true);
     horizontalRailMotor.setRunMode(FOLLOW_POS);
     horizontalRailMotor.setMaxSpeed(400);
     horizontalRailMotor.setAcceleration(400);
-    horizontalRailMotor.autoPower(true);
 
     // grabServo.attach(PIN_SERVO_GRAB);
     // manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
@@ -382,6 +413,48 @@ void EncoderMotor::stopIfStuck() {
     }
 }
 //
+// методы класса StepperMotor
+//
+void StepperMotor::enable() {
+    digitalWrite(enPin, LOW);
+}
+void StepperMotor::disable() {
+    digitalWrite(enPin, HIGH);
+}
+int StepperMotor::getCurrentPosition() {
+    return currentPosition;
+}
+int StepperMotor::getTargetPosition() {
+    return targetPosition;
+}
+void StepperMotor::setCurrentPosition(int position) {
+    currentPosition = position;
+}
+void StepperMotor::setTargetPosition(int position) {
+    targetPosition = position;
+    this->enable();
+    if (targetPosition > currentPosition) {
+        digitalWrite(dirPin, LOW);
+        return;
+    }
+    digitalWrite(dirPin, HIGH);
+}
+void StepperMotor::step() {
+    if (currentPosition != targetPosition) {
+        digitalWrite(stepPin, HIGH);
+        delayMicroseconds(1000);
+        digitalWrite(stepPin, LOW);
+        currentPosition++;
+    }
+    else {
+        this->disable();
+    }
+}
+void StepperMotor::stop() {
+    targetPosition = currentPosition;
+    this->disable();
+}
+//
 // методы класса Manipulator
 //
 void Manipulator::moveManipulator(int manipulatorPosition, int servoDegrees) {
@@ -394,7 +467,7 @@ void Manipulator::rotateRail(int degs) {
 }
 
 void Manipulator::moveHorizontalRail(int position) {
-    horizontalRailMotor.setTarget(position, ABSOLUTE);
+    horizontalRailMotor.setTarget(position);
 }
 
 void Manipulator::grab(int rotateServoDegrees, int grabServoDegrees) {
