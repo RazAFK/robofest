@@ -1,11 +1,24 @@
+class A:
+    p = 10
+    def pepa():
+        return 1
+    def pupa():
+        return 0
 
-d = {
-    'k1': 1,
-    'k2': 2
-}
+class B:
+    a = 12
 
-def p(k1, k2):
-    print(f'k1: {k1}')
-    print(f'k2: {k2}')
+aee = A()
+bee = B()
 
-p(**d)
+print([ x for x in dir(aee) if '__' not in x and callable(getattr(aee, x))])
+
+index = [x for x in range(2)]
+
+
+
+iterator = iter(index)
+
+print(next(iterator))
+print(next(iterator))
+print(next(iterator))

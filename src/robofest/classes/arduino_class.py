@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import serial, serial.tools.list_ports, queue, threading, datetime
+import serial, serial.tools.list_ports, queue, threading, datetime, math
 import os, time
 from enum import StrEnum
 
@@ -70,22 +70,48 @@ class Arduino:
         class Commands(StrEnum):
             moveForward = 'moveForward'
             moveBackward = 'moveBackward'
-            moveStop = 'moveStop'
+            wheelsStop = 'wheelsStop'
+            rotateRight = 'rotateRight'
+            rotateLeft = 'rotateLeft'
         
         def __init__(self, master: Arduino):
             self.master = master
 
         def move_stop(self):
-            command = self.master.convert_command(self.Commands.moveStop)
+            command = self.master.convert_command(self.Commands.wheelsStop)
             self.master.write_com(command)
 
-        def move_forward_time(self, milliseconds):
-            command = self.master.convert_command(self.Commands.moveForward, milliseconds)
+        def move_forward_distance(self, distance):
+            command = self.master.convert_command(self.Commands.moveForward, distance)
             self.master.write_com(command)
 
-        def move_backward_time(self, milliseconds):
-            command = self.master.convert_command(self.Commands.moveBackward, milliseconds)
+        def move_backward_distance(self, distance):
+            command = self.master.convert_command(self.Commands.moveBackward, distance)
             self.master.write_com(command)
+
+        def rotate_right(self, distance):
+            # distance = degrees*2*st.robot_radius*math.pi/360
+            command = self.master.convert_command(self.Commands.rotateRight,
+                st.velocity_front_right,
+                st.velocity_front_left,
+                st.velocity_backward_right,
+                st.velocity_backward_left,
+                distance,
+                )
+            self.master.write_com(command)
+
+        def rotate_left(self, distance):
+            # distance = degrees*2*st.robot_radius*math.pi/360
+            command = self.master.convert_command(self.Commands.rotateLeft,
+                st.velocity_front_right,
+                st.velocity_front_left,
+                st.velocity_backward_right,
+                st.velocity_backward_left,
+                distance,
+                )
+            self.master.write_com(command)
+        
+
 
     class Arm:
         class Commands(StrEnum):

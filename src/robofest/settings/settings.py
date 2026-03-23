@@ -74,3 +74,15 @@ rail_center_offset_x = 100 #santimetrs
 rail_center_offset_y = 100 #santimetrs
 
 rail_angle_step = 1
+
+
+velocity_front_right = 0.3
+velocity_front_left = 0.3
+velocity_backward_right = 0.3
+velocity_backward_left = 0.3
+
+robot_radius = math.sqrt(2)*0.15#metrs
+
+
+#time
+wait_card = datetime.timedelta(seconds=30)

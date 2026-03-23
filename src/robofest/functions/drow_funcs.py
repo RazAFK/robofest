@@ -27,4 +27,7 @@ def drow_limit(frame: cv2.Mat, limit: Limits, color = (0, 0, 255), line_thicknes
     #=
     cv2.line(result, (0, int(limit.y_bounds[0]*limit.height)), (limit.width, int(limit.y_bounds[0]*limit.height)), color, line_thickness)
     cv2.line(result, (0, int(limit.y_bounds[-1]*limit.height)), (limit.width, int(limit.y_bounds[-1]*limit.height)), color, line_thickness)
+    #o
+    cv2.circle(result, (int(limit.width*(abs(limit.x_max-limit.x_min)/2+limit.x_min)), int(limit.height*(abs(limit.y_min-limit.y_max)/2 + limit.y_min))), limit.distance_min, color, line_thickness)
+    cv2.circle(result, (int(limit.width*(abs(limit.x_max-limit.x_min)/2+limit.x_min)), int(limit.height*(abs(limit.y_min-limit.y_max)/2 + limit.y_min))), limit.distance_max, color, line_thickness)
     return result

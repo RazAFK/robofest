@@ -34,6 +34,9 @@ class Segment:
         self.tan = (p2.x-p1.x)/(p2.y-p1.y) if (p2.y-p1.y)!=0 else None
         self.angle = np.degrees(np.atan(self.tan)) if self.tan!=None else 90
         self.b = p1.y - self.tan*p1.x if self.tan!= None else p1.y
+        self.A = (p1.y - p2.y)
+        self.B = (p2.x - p1.y)
+        self.C = (self.A*p1.x + self.B*p1.y)
 
     def __eq__(self, value):
         return (self.p1 == value.p1) and (self.p2 == value.p2)
@@ -72,6 +75,16 @@ class Segment:
             return any(conditions) 
         conditions.append(((self.p1.x - st.delta_pixels) <= p.x <= (self.x2 + st.delta_pixels)) and (((self.p1.y - st.delta_pixels) <= p.y <= (self.p2.y + st.delta_pixels))))
         return any(conditions)
+
+    def shortest_distance(self, p: Point):
+        numerator = abs(self.A*p.x + self.B*p.y + self.C)
+        denominator = np.sqrt(self.A**2 + self.B**2)
+        return numerator/denominator
+    
+    def shortest_distance_edge(self, p: Point):
+        first_dist = np.sqrt((self.p1.x - p.x)**2+(self.p1.y - p.y)**2)
+        second_dist = np.sqrt((self.p2.x - p.x)**2+(self.p2.y - p.y)**2)
+        return min(first_dist, second_dist)
 
 def segment_belongs_segment(s1: Segment, s2: Segment):
     if (s1.angle - st.delta_angle) <= s2.angle <= (s1.angle + st.delta_angle):

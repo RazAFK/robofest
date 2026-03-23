@@ -14,7 +14,7 @@ while True:
     if key == ord('q'):
         break
     frame = cam.get_frame()
-    frame = flip(frame, Flip.wheels)
+    frame = flip(frame, Flip.debug)
     result = handl_num(frame, reader)
     result_frame = frame.copy()
     if result is not None:

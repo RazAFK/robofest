@@ -33,7 +33,6 @@ def get_lines(edges):
                 if exist_flag: break
             if not(exist_flag):
                 class_lines.append(l)
-
     return class_lines
 
 def filter_lines(lines, limit: Limits):
@@ -42,10 +41,22 @@ def filter_lines(lines, limit: Limits):
         for line in lines:
             if limit.contains_segment(line):
                 new_lines.append(line)
-                
+    return new_lines
+
+def filter_lines_by(lines, limit: Limits, *args: Limits.Conditions):
+    new_lines = []
+    if lines is not None:
+        for line in lines:
+            if limit.filter_segment_by(line, *args):
+                new_lines.append(line)
     return new_lines
 
 def handl_lines(frame, limit):
     edges = process_frame(frame)
     lines = get_lines(edges)
     return filter_lines(lines, limit)
+
+def handl_lines_by(frame, limit, *args):
+    edges = process_frame(frame)
+    lines = get_lines(edges)
+    return filter_lines_by(lines, limit, *args)

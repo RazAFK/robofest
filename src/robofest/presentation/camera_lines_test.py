@@ -6,26 +6,23 @@ from robofest.settings import limits_settings as lst
 from robofest.classes.camera_class import *
 from robofest.classes.limit_class import Limits
 
-<<<<<<< HEAD
-# from robofest.functions.num_handler import handl_num
-=======
->>>>>>> 1aa4ecd7f05932d41be21b1c900a836ca065c677
 from robofest.functions.lines_handler import handl_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_params
 
 # arm, arm_q, wheels, wheels_q = init_arduino()
 # print(arm, wheels)
 
-arm_cam = Camera(1)
+arm_cam = Camera(0)
 
 def nothing(x):
     pass
 
 limit = Limits((st.wheels_width, st.wheels_height),
-               (0, 1000),
-               (-90, 90),
-               (0, 1),
-               (0, 1))
+               distance=(0, 500),
+               length=(0, 500),
+               angle=(-90, 90),
+               x_bounds=(0, 1),
+               y_bounds=(0, 1))
 
 cv2.namedWindow('Settings')
 cv2.createTrackbar('x_min', 'Settings', int(limit.x_min*100), 100, nothing)
@@ -35,6 +32,9 @@ cv2.createTrackbar('y_max', 'Settings', int(limit.y_max*100), 100, nothing)
 cv2.createTrackbar('a_min', 'Settings', 90+limit.angle_min, 180, nothing)
 cv2.createTrackbar('a_max', 'Settings', 90+limit.angle_max, 180, nothing)
 cv2.createTrackbar('l_min', 'Settings', limit.length_min, 500, nothing)
+cv2.createTrackbar('l_max', 'Settings', limit.length_max, 500, nothing)
+cv2.createTrackbar('d_min', 'Settings', limit.distance_min, 500, nothing)
+cv2.createTrackbar('d_max', 'Settings', limit.distance_max, 500, nothing)
 
 old_limit = limit
 
@@ -50,9 +50,12 @@ while True:
     a_min = cv2.getTrackbarPos('a_min', 'Settings')-90
     a_max = cv2.getTrackbarPos('a_max', 'Settings')-90
     l_min = cv2.getTrackbarPos('l_min', 'Settings')
-    l_max = 500
+    l_max = cv2.getTrackbarPos('l_max', 'Settings')
+    d_min = cv2.getTrackbarPos('d_min', 'Settings')
+    d_max = cv2.getTrackbarPos('d_max', 'Settings')
     limit = Limits(
         (st.wheels_width, st.wheels_height),
+        (d_min, d_max),
         (l_min, l_max),
         (a_min, a_max),
         (x_min, x_max),
@@ -62,7 +65,7 @@ while True:
         old_limit=limit
         print(limit)
     frame = arm_cam.get_frame()
-    frame = flip(frame, Flip.wheels)
+    # frame = flip(frame, Flip.wheels)
     if frame is None: continue
     lines = handl_lines(frame, limit)
     result = drow_lines(frame, lines, (0, 0, 255))

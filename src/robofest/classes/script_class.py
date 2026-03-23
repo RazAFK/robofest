@@ -38,9 +38,20 @@ class Script:
 
     acts = {}
     playing_act = 0
+    hand_cam = None
+    wheel_cam = None
+    arduino = None
+    reader = None
+    special = (None, None)
 
     def __init__(self, acts: list[Act | Intermission]):
         self.acts = acts
+
+    def add_workers(self, hand_cam, wheel_cam, arduino, reader):
+        self.hand_cam = hand_cam
+        self.wheel_cam = wheel_cam
+        self.arduino = arduino
+        self.reader = reader
 
     def next_act():
         pass
