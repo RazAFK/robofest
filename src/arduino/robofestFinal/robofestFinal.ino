@@ -129,35 +129,6 @@ class VerticalRailMotor : public EncoderMotor {
     void stopIfStuck();
 };
 
-class StepperMotor {
-    int stepPin;
-    int dirPin;
-    int enPin;
-
-    bool flagIsOn = false;
-
-    int targetPosition = 0;
-    int currentPosition = 0;
-
-    public:
-
-    StepperMotor(int step, int dir, int en) :
-    stepPin(step),
-    dirPin(dir),
-    enPin(en) {}
-
-    void enable();
-    void disable();
-
-    int getCurrent();
-    int getTarget();
-    void setCurrent(int position);
-    void setTarget(int position);
-
-    void stop();
-    void tick();
-};
-
 class Manipulator {
     Servo& grabServo;
     Servo& manipulatorRotationServo;
@@ -305,9 +276,10 @@ Servo manipulatorRotationServo;
 
 ServoSmooth railRotationServo;
 
-GStepper<STEPPER2WIRE> horizontalRailMotor(PIN_STEPPER_STEP, 
-                                 PIN_STEPPER_DIR, 
-                                 PIN_STEPPER_ENABLE);
+GStepper<STEPPER2WIRE> horizontalRailMotor(STEPPER_STEPS_PER_ROUND,
+                                           PIN_STEPPER_STEP, 
+                                           PIN_STEPPER_DIR, 
+                                           PIN_STEPPER_ENABLE);
 
 VerticalRailMotor verticalRailMotor(ADDRESS_VERTICAL_RAIL_MOTOR,
                                     ENCODER_MAGNET_COUNT_VERTICAL_RAIL,
@@ -374,11 +346,11 @@ void setup () {
     // railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
     // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
-    // horizontalRailMotor.invertEn(true);
-    // horizontalRailMotor.autoPower(true);
-    // horizontalRailMotor.setRunMode(FOLLOW_POS);
-    // horizontalRailMotor.setMaxSpeed(400);
-    // horizontalRailMotor.setAcceleration(400);
+    horizontalRailMotor.autoPower(true);
+    horizontalRailMotor.setRunMode(FOLLOW_POS);
+    horizontalRailMotor.reverse(true);
+    horizontalRailMotor.setMaxSpeed(800);
+    horizontalRailMotor.setAcceleration(800);
 
     // grabServo.attach(PIN_SERVO_GRAB);
     // manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
@@ -391,43 +363,24 @@ void setup () {
 
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
-
-    // wheelBase.rotateRight(0.3f, 1.9f);
-    // delay(7000);
-    // wheelBase.rotateLeft(0.3f, 1.9f);
-    // delay(7000);
-    // wheelBase.rotateRight(0.7f, 1.9f);
-    // delay(5000);
-    // wheelBase.rotateLeft(0.7f, 1.9f);
-    // delay(5000);
-    // wheelBase.rotateRight(0.1f, 1.9f);
-    // delay(10000);
-    // wheelBase.rotateLeft(0.1f, 1.9f);
-    // wheelBase.moveForward(0.5f, 0.5f, 0.5f, 0.5f, 1.0f);
-
-    // verticalRailMotor.move(-0.1, 0.1);
-
-    // railRotationServo.setTargetDeg(90);
-
-    // horizontalRailMotor.setTarget(1000);
 }
 
 String msg; // буфер для полученных сообщений
 
 void loop() {
-    // railRotationServo.tick();
-    horizontalRailMotor.tick();
-    Serial.println(NULL);
-
+    railRotationServo.tick();
+    if(horizontalRailMotor.tick()) {
+        Serial.println(NULL);
+    }
     // verticalRailMotor.stopIfStuck();
 
-    // if (Serial.available()) {
-    //     msg = Serial.readStringUntil('\n');
+    if (Serial.available()) {
+        msg = Serial.readStringUntil('\n');
 
-    //     MessageHandler::processMessage(msg);
+        MessageHandler::processMessage(msg);
 
-    //     Serial.println(msg);
-    // }
+        Serial.println(msg);
+    }
 }
 
 //
@@ -468,11 +421,15 @@ float EncoderMotor::getPosition() {
 //
 // методы класса WheelMotor
 //
+void WheelMotor::move(float speed, float distance) {
+    this->EncoderMotor::move(speed, distance);
+}
 //
 // методы класса VerticalRailMotor
 //
 void VerticalRailMotor::move(float speed, float distance) {
     tempPosition = 0.0f;
+    motor.delsum();
     this->EncoderMotor::move(speed, distance);
     timer = millis();
 }
@@ -503,23 +460,6 @@ void StepperMotor::setTarget(int position) {
         return;
     }
     digitalWrite(dirPin, HIGH);
-}
-void StepperMotor::tick() {
-    Serial.println("tick started " + String(currentPosition));
-    if (currentPosition != targetPosition) {
-        digitalWrite(stepPin, HIGH);
-        delay(1);
-        digitalWrite(stepPin, LOW);
-        currentPosition++;
-    }
-    else if (flagIsOn == true) {
-        this->disable();
-        flagIsOn = false;
-    }
-}
-void StepperMotor::stop() {
-    targetPosition = currentPosition;
-    this->disable();
 }
 //
 // методы класса Manipulator
