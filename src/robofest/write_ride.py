@@ -9,7 +9,8 @@ from robofest.functions.num_handler import handl_num
 from robofest.functions.math_funcs import get_step_angle, get_coords
 
 avaliable_ports = get_available_ports()
-arduino = Arduino(avaliable_ports)
+print('avaliable_ports', avaliable_ports)
+arduino = Arduino(avaliable_ports[0])
 print(arduino)
 
 def execute_command(executor, command, *args):
