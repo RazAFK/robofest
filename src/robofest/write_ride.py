@@ -10,6 +10,7 @@ from robofest.functions.math_funcs import get_step_angle, get_coords
 
 avaliable_ports = get_available_ports()
 arduino = Arduino(avaliable_ports)
+print(arduino)
 
 def execute_command(executor, command, *args):
     try:

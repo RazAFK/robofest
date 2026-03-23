@@ -43,6 +43,9 @@ class Arduino:
         self.thread = threading.Thread(target=self._update_loop, daemon=True)
         self.thread.start()
 
+    def __str__(self):
+        return f'arduino on port: {self.port}'
+
     def write_com(self, command):
         self.arduino.reset_input_buffer()
         
