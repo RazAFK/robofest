@@ -22,7 +22,7 @@ def check_command(command):
         try:
             func, executor = getattr(arduino.arm, command), arduino.arm
         except:
-            return False
+            return False, None
     return callable(func), executor
 
 
@@ -67,4 +67,6 @@ while True:
     command, *args = com.split('#')
     ret, exc = check_command(command)
     if ret:
-        execute_command(exc, command, args)   
+        execute_command(exc, command, args)
+    else:
+        print('[WARN] wrong command')  
