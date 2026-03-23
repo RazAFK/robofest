@@ -370,7 +370,7 @@ String msg; // буфер для полученных сообщений
 void loop() {
     railRotationServo.tick();
     if(horizontalRailMotor.tick()) {
-        Serial.println(NULL);
+        Serial.print(NULL);
     }
     // verticalRailMotor.stopIfStuck();
 
@@ -421,45 +421,17 @@ float EncoderMotor::getPosition() {
 //
 // методы класса WheelMotor
 //
-void WheelMotor::move(float speed, float distance) {
-    this->EncoderMotor::move(speed, distance);
-}
+// void WheelMotor::move(float speed, float distance) {
+//     this->EncoderMotor::move(speed, distance);
+// }
 //
 // методы класса VerticalRailMotor
 //
 void VerticalRailMotor::move(float speed, float distance) {
     tempPosition = 0.0f;
-    motor.delsum();
+    motor.delSum();
     this->EncoderMotor::move(speed, distance);
     timer = millis();
-}
-//
-// методы класса StepperMotor
-//
-void StepperMotor::enable() {
-    digitalWrite(enPin, LOW);
-}
-void StepperMotor::disable() {
-    digitalWrite(enPin, HIGH);
-}
-int StepperMotor::getCurrent() {
-    return currentPosition;
-}
-int StepperMotor::getTarget() {
-    return targetPosition;
-}
-void StepperMotor::setCurrent(int position) {
-    currentPosition = position;
-}
-void StepperMotor::setTarget(int position) {
-    targetPosition = position;
-    flagIsOn = true;
-    this->enable();
-    if (targetPosition >= currentPosition) {
-        digitalWrite(dirPin, LOW);
-        return;
-    }
-    digitalWrite(dirPin, HIGH);
 }
 //
 // методы класса Manipulator
