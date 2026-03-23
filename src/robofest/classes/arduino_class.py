@@ -8,7 +8,7 @@ from enum import StrEnum
 from robofest.settings import settings as st
 
 def get_available_ports():
-    return [port.name for port in serial.tools.list_ports.comports()]
+    return [port.name for port in serial.tools.list_ports.comports() if 'COM' in port.name or 'USB' in port.name]
 
 class Object:
     def __init__(self, time: datetime.datetime, responce: str):
