@@ -49,8 +49,9 @@
 // характеристики моторов (на колесной базе они одинаковые)
 #define ENCODER_MAGNET_COUNT_WHEELS 12       // количество магнитов на энкодере (указывается продавцом)
 #define ENCODER_MAGNET_COUNT_BROKEN_WHEEL 12 // одно колесо поломанное вообще 11.7
-#define REDUCER_WHEELS 51.6                  // передаточное число редуктора
+#define REDUCER_WHEELS 27.5                  // передаточное число редуктора
 #define RADIUS_WHEELS 50.0                   // радиус колеса на моторе
+#define CHARGE_DISTANCE 0.12f                 // дистанция для разгона до максимальной скорости
 // опционально обозначить скорости
 
 // полярности (направления) колес
@@ -66,13 +67,10 @@
 #define ADDRESS_BACKWARD_LEFT 0x0A
 
 class EncoderMotor {
+    protected:
     iarduino_I2C_Motor motor;
 
     bool flagDefaultDirection;
-
-    float tempPosition = 0;
-
-    int timer = 0;
 
     public:
     EncoderMotor(int I2CAddress, 
@@ -92,16 +90,51 @@ class EncoderMotor {
         motor.begin(sWire);
     }
 
-    void move(float speed = 0, float distance = 0);
-    void stopIfStuck();
+    virtual void move(float speed = 0, float distance = 0);
     float getPosition();
     void stop();
 };
 
+class WheelMotor : public EncoderMotor {
+    public:
+    WheelMotor(int I2CAddress, 
+               int magnetsCount,
+               float reducer, 
+               float wheelRadius, 
+               bool defaultDirection) : 
+        EncoderMotor(I2CAddress, 
+                     magnetsCount,
+                     reducer, 
+                     wheelRadius, 
+                     defaultDirection) {}
+};
+
+class VerticalRailMotor : public EncoderMotor {
+    float tempPosition = 0.0f;
+    int timer = 0;
+
+    public:
+    VerticalRailMotor(int I2CAddress, 
+                      int magnetsCount,
+                      float reducer, 
+                      float wheelRadius, 
+                      bool defaultDirection) : 
+        EncoderMotor(I2CAddress, 
+                     magnetsCount,
+                     reducer, 
+                     wheelRadius, 
+                     defaultDirection) {}
+
+    void move(float speed, float distance);
+    void stopIfStuck();
+};
+
 class StepperMotor {
-    int pinStep;
-    int pinDir;
-    int pinEn;
+    int stepPin;
+    int dirPin;
+    int enPin;
+
+    bool flagIsOn = false;
 
     int targetPosition = 0;
     int currentPosition = 0;
@@ -109,36 +142,35 @@ class StepperMotor {
     public:
 
     StepperMotor(int step, int dir, int en) :
-    pinStep(step),
-    pinDir(dir),
-    pinEn(en) {}
+    stepPin(step),
+    dirPin(dir),
+    enPin(en) {}
 
     void enable();
     void disable();
 
-    int getCurrentPosition();
-    int getTargetPosition();
-    void setCurrentPosition(int position);
-    void setTargetPosition(int position);
+    int getCurrent();
+    int getTarget();
+    void setCurrent(int position);
+    void setTarget(int position);
 
     void stop();
-    void step();
-
-}
+    void tick();
+};
 
 class Manipulator {
     Servo& grabServo;
     Servo& manipulatorRotationServo;
     ServoSmooth& railRotationServo;
     GStepper<STEPPER2WIRE>& horizontalRailMotor;
-    EncoderMotor& verticalRailMotor;
+    VerticalRailMotor& verticalRailMotor;
 
     public:
     Manipulator(Servo& grabServo, 
          Servo& manipulatorRotationServo, 
          ServoSmooth& railRotationServo, 
          GStepper<STEPPER2WIRE>& horizontalRailMotor, 
-         EncoderMotor& verticalRailMotor) :
+         VerticalRailMotor& verticalRailMotor) :
         grabServo(grabServo),
         manipulatorRotationServo(manipulatorRotationServo),
         railRotationServo(railRotationServo),
@@ -157,26 +189,23 @@ class Manipulator {
     void rotateManipulator(int degs);
     void rotateGrabServo(int degs);
 
-    // todo: написать гетеры для позиций всех компонентов
     int getRailRotationServoDegrees();
     int getManipulatorRotationServoDegrees();
     int getGrabServoDegrees();
     int getHorizontalRailMotorPosition();
-
-    bool checkIfStuck();
 };
 
 class WheelBase {
-    EncoderMotor& forwardRight;
-    EncoderMotor& forwardLeft;
-    EncoderMotor& backwardRight;
-    EncoderMotor& backwardLeft;
+    WheelMotor& forwardRight;
+    WheelMotor& forwardLeft;
+    WheelMotor& backwardRight;
+    WheelMotor& backwardLeft;
 
     public:
-    WheelBase(EncoderMotor& forwardRight,
-              EncoderMotor& forwardLeft,
-              EncoderMotor& backwardRight,
-              EncoderMotor& backwardLeft) :
+    WheelBase(WheelMotor& forwardRight,
+              WheelMotor& forwardLeft,
+              WheelMotor& backwardRight,
+              WheelMotor& backwardLeft) :
         forwardRight(forwardRight),
         forwardLeft(forwardLeft),
         backwardRight(backwardRight),
@@ -207,8 +236,18 @@ class WheelBase {
                     float speedBR, 
                     float speedBL, 
                     float distance);
-
-    bool checkIfStuck();
+    // void virtual moveRight(float distance); // езда крабом
+    // void moveRight(float speedFR, 
+    //                float speedFL, 
+    //                float speedBR, 
+    //                float speedBL, 
+    //                float distance);
+    // void virtual moveLeft(float distance);
+    // void moveLeft(float speedFR, 
+    //               float speedFL, 
+    //               float speedBR, 
+    //               float speedBL, 
+    //               float distance);
     void stop();
 
 };
@@ -266,43 +305,42 @@ Servo manipulatorRotationServo;
 
 ServoSmooth railRotationServo;
 
-GStepper<STEPPER2WIRE> horizontalRailMotor(STEPPER_STEPS_PER_ROUND, 
-                                           PIN_STEPPER_STEP, 
-                                           PIN_STEPPER_DIR, 
-                                           PIN_STEPPER_ENABLE);
+GStepper<STEPPER2WIRE> horizontalRailMotor(PIN_STEPPER_STEP, 
+                                 PIN_STEPPER_DIR, 
+                                 PIN_STEPPER_ENABLE);
 
-EncoderMotor verticalRailMotor(ADDRESS_VERTICAL_RAIL_MOTOR,
-                               ENCODER_MAGNET_COUNT_VERTICAL_RAIL,
-                               REDUCER_VERTICAL_RAIL,
-                               RADIUS_VERTICAL_RAIL,
-                               VERTICAL_RAIL_MOTOR_DEFAULT_DIRECTION);
+VerticalRailMotor verticalRailMotor(ADDRESS_VERTICAL_RAIL_MOTOR,
+                                    ENCODER_MAGNET_COUNT_VERTICAL_RAIL,
+                                    REDUCER_VERTICAL_RAIL,
+                                    RADIUS_VERTICAL_RAIL,
+                                    VERTICAL_RAIL_MOTOR_DEFAULT_DIRECTION);
 
 Manipulator manipulator(grabServo, 
-          manipulatorRotationServo, 
-          railRotationServo, 
-          horizontalRailMotor, 
-          verticalRailMotor);
+                        manipulatorRotationServo, 
+                        railRotationServo, 
+                        horizontalRailMotor, 
+                        verticalRailMotor);
 
-EncoderMotor forwardRight(ADDRESS_FORWARD_RIGHT, 
-                          ENCODER_MAGNET_COUNT_WHEELS,
-                          REDUCER_WHEELS,
-                          RADIUS_WHEELS,
-                          WHEEL_DEFAULT_DIRECTION_FORWARD_RIGHT);
-EncoderMotor forwardLeft(ADDRESS_FORWARD_LEFT, 
-                         ENCODER_MAGNET_COUNT_BROKEN_WHEEL,
+WheelMotor forwardRight(ADDRESS_FORWARD_RIGHT, 
+                        ENCODER_MAGNET_COUNT_WHEELS,
+                        REDUCER_WHEELS,
+                        RADIUS_WHEELS,
+                        WHEEL_DEFAULT_DIRECTION_FORWARD_RIGHT);
+WheelMotor forwardLeft(ADDRESS_FORWARD_LEFT, 
+                       ENCODER_MAGNET_COUNT_BROKEN_WHEEL,
+                       REDUCER_WHEELS,
+                       RADIUS_WHEELS,
+                       WHEEL_DEFAULT_DIRECTION_FORWARD_LEFT);
+WheelMotor backwardRight(ADDRESS_BACKWARD_RIGHT, 
+                         ENCODER_MAGNET_COUNT_WHEELS,
                          REDUCER_WHEELS,
                          RADIUS_WHEELS,
-                         WHEEL_DEFAULT_DIRECTION_FORWARD_LEFT);
-EncoderMotor backwardRight(ADDRESS_BACKWARD_RIGHT, 
-                           ENCODER_MAGNET_COUNT_WHEELS,
-                           REDUCER_WHEELS,
-                           RADIUS_WHEELS,
-                           WHEEL_DEFAULT_DIRECTION_BACKWARD_RIGHT);
-EncoderMotor backwardLeft(ADDRESS_BACKWARD_LEFT, 
-                          ENCODER_MAGNET_COUNT_WHEELS,
-                          REDUCER_WHEELS,
-                          RADIUS_WHEELS,
-                          WHEEL_DEFAULT_DIRECTION_BACKWARD_LEFT);
+                         WHEEL_DEFAULT_DIRECTION_BACKWARD_RIGHT);
+WheelMotor backwardLeft(ADDRESS_BACKWARD_LEFT, 
+                        ENCODER_MAGNET_COUNT_WHEELS,
+                        REDUCER_WHEELS,
+                        RADIUS_WHEELS,
+                        WHEEL_DEFAULT_DIRECTION_BACKWARD_LEFT);
 
 WheelBase wheelBase(forwardRight,
                     forwardLeft,
@@ -336,11 +374,11 @@ void setup () {
     // railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
     // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
-    horizontalRailMotor.invertEn(true);
-    horizontalRailMotor.autoPower(true);
-    horizontalRailMotor.setRunMode(FOLLOW_POS);
-    horizontalRailMotor.setMaxSpeed(400);
-    horizontalRailMotor.setAcceleration(400);
+    // horizontalRailMotor.invertEn(true);
+    // horizontalRailMotor.autoPower(true);
+    // horizontalRailMotor.setRunMode(FOLLOW_POS);
+    // horizontalRailMotor.setMaxSpeed(400);
+    // horizontalRailMotor.setAcceleration(400);
 
     // grabServo.attach(PIN_SERVO_GRAB);
     // manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
@@ -349,68 +387,94 @@ void setup () {
     forwardLeft.begin(&sWire);
     backwardRight.begin(&sWire);
     backwardLeft.begin(&sWire);
-    verticalRailMotor.begin(&sWire);
+    // verticalRailMotor.begin(&sWire);
 
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
+
+    // wheelBase.rotateRight(0.3f, 1.9f);
+    // delay(7000);
+    // wheelBase.rotateLeft(0.3f, 1.9f);
+    // delay(7000);
+    // wheelBase.rotateRight(0.7f, 1.9f);
+    // delay(5000);
+    // wheelBase.rotateLeft(0.7f, 1.9f);
+    // delay(5000);
+    // wheelBase.rotateRight(0.1f, 1.9f);
+    // delay(10000);
+    // wheelBase.rotateLeft(0.1f, 1.9f);
+    // wheelBase.moveForward(0.5f, 0.5f, 0.5f, 0.5f, 1.0f);
 
     // verticalRailMotor.move(-0.1, 0.1);
 
     // railRotationServo.setTargetDeg(90);
 
-    horizontalRailMotor.setTarget(1000);
+    // horizontalRailMotor.setTarget(1000);
 }
 
 String msg; // буфер для полученных сообщений
 
 void loop() {
-    railRotationServo.tick();
+    // railRotationServo.tick();
     horizontalRailMotor.tick();
+    Serial.println(NULL);
 
-    verticalRailMotor.stopIfStuck();
-    forwardLeft.stopIfStuck();
+    // verticalRailMotor.stopIfStuck();
 
-    if (Serial.available()) {
-        msg = Serial.readStringUntil('\n');
+    // if (Serial.available()) {
+    //     msg = Serial.readStringUntil('\n');
 
-        MessageHandler::processMessage(msg);
+    //     MessageHandler::processMessage(msg);
 
-        Serial.println(msg);
-    }
+    //     Serial.println(msg);
+    // }
 }
 
 //
 // методы класса EncoderMotor
 //
 void EncoderMotor::move(float speed, float distance) {
-    tempPosition = 0;
     if (!flagDefaultDirection)
     {
         motor.setSpeed(-speed, MOT_M_S, distance, MOT_MET);
         return;
     }
     motor.setSpeed(speed, MOT_M_S, distance, MOT_MET);
-    timer = millis();
 }
-
 void EncoderMotor::stop() {
     this->move(0, 0);
     motor.delSum();
     // isMoving = false;
 }
-
 float EncoderMotor::getPosition() {
     return motor.getSum(MOT_MET);
 }
+// void EncoderMotor::setTarget(float position) {
+//     targetPosition = position;
+// }
 
-void EncoderMotor::stopIfStuck() {
-    if (millis() - timer > 500 && this->getPosition() == tempPosition) {
-        this->stop();
-        tempPosition = -1;
-    }
-    else if (tempPosition != -1) {
-        tempPosition = this->getPosition();
-    }
+// void EncoderMotor::stopIfStuck() {
+//     if (millis() - timer > 500 && this->getPosition() == tempPosition) {
+//         this->stop();
+//         tempPosition = -1.0f;
+//     }
+//     else if (tempPosition != -1.0f) {
+//         tempPosition = this->getPosition();
+//     }
+// }
+// void EncoderMotor::checkAcseleration() {
+
+// }
+//
+// методы класса WheelMotor
+//
+//
+// методы класса VerticalRailMotor
+//
+void VerticalRailMotor::move(float speed, float distance) {
+    tempPosition = 0.0f;
+    this->EncoderMotor::move(speed, distance);
+    timer = millis();
 }
 //
 // методы класса StepperMotor
@@ -421,33 +485,36 @@ void StepperMotor::enable() {
 void StepperMotor::disable() {
     digitalWrite(enPin, HIGH);
 }
-int StepperMotor::getCurrentPosition() {
+int StepperMotor::getCurrent() {
     return currentPosition;
 }
-int StepperMotor::getTargetPosition() {
+int StepperMotor::getTarget() {
     return targetPosition;
 }
-void StepperMotor::setCurrentPosition(int position) {
+void StepperMotor::setCurrent(int position) {
     currentPosition = position;
 }
-void StepperMotor::setTargetPosition(int position) {
+void StepperMotor::setTarget(int position) {
     targetPosition = position;
+    flagIsOn = true;
     this->enable();
-    if (targetPosition > currentPosition) {
+    if (targetPosition >= currentPosition) {
         digitalWrite(dirPin, LOW);
         return;
     }
     digitalWrite(dirPin, HIGH);
 }
-void StepperMotor::step() {
+void StepperMotor::tick() {
+    Serial.println("tick started " + String(currentPosition));
     if (currentPosition != targetPosition) {
         digitalWrite(stepPin, HIGH);
-        delayMicroseconds(1000);
+        delay(1);
         digitalWrite(stepPin, LOW);
         currentPosition++;
     }
-    else {
+    else if (flagIsOn == true) {
         this->disable();
+        flagIsOn = false;
     }
 }
 void StepperMotor::stop() {
@@ -509,7 +576,7 @@ void WheelBase::moveForward(float speed, float distance) {
     forwardRight.move(speed, distance);
     forwardLeft.move(speed, distance);
     backwardRight.move(speed, distance);
-    backwardLeft.move(speed, distance);
+    backwardLeft.move(distance);
 }
 
 void WheelBase::moveForward(float speedFR, 
@@ -614,7 +681,7 @@ void MessageHandler::executeCommand(String command, float* arguments) {
     //
     // команды для колесной базы
     //
-    if (command == "stop") {
+    if (command == "wheelsStop") {
         MessageHandler::wheelBase->stop();
     }
     else if (command == "moveForward") {
@@ -645,6 +712,7 @@ void MessageHandler::executeCommand(String command, float* arguments) {
                                               arguments[3],
                                               arguments[4]);
     }
+    // гетеры колесной базы
     // else if (command == "getWheelsPositions") {
     //     MessageHandler::sendMessage(MessageHandler::prefix::WHEELS, 
     //                                 {forwardRight.getPosition(),
@@ -673,6 +741,7 @@ void MessageHandler::executeCommand(String command, float* arguments) {
     else if (command == "moveVerticalRail") {
         MessageHandler::manipulator->moveVerticalRail((bool)arguments[0]);
     }
+    // гетеры манипулятора
     else if (command == "getHorizontalPosition") {
         String args[1] = {String(MessageHandler::manipulator->getHorizontalRailMotorPosition())};
         MessageHandler::sendMessage(MessageHandler::prefix::RAIL,

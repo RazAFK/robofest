@@ -21,7 +21,7 @@ void loop() {
   }
   digitalWrite(enPin, HIGH);
   
-  delay(1000); // Пауза 1 секунда
+  delay(2000); // Пауза 1 секунда
 
   // Движение НАЗАД
   digitalWrite(enPin, LOW);
@@ -34,5 +34,5 @@ void loop() {
   }
   digitalWrite(enPin, HIGH);
 
-  delay(1000); // Пауза 1 секунда
+  delay(2000); // Пауза 1 секунда
 }

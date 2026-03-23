@@ -10,8 +10,7 @@
 #include <GyverStepper.h>
 GStepper<STEPPER2WIRE> stepper(STEPPER_STEPS_PER_ROUND, 
                                            PIN_STEPPER_STEP, 
-                                           PIN_STEPPER_DIR, 
-                                           PIN_STEPPER_ENABLE);
+                                           PIN_STEPPER_DIR);
 void setup() {
     Serial.begin(9600);
     // выходы
@@ -22,10 +21,11 @@ void setup() {
     stepper.setRunMode(FOLLOW_POS); // режим поддержания скорости
     stepper.setSpeed(200);       // в шагах/сек
     stepper.setAcceleration(200);
+    // stepper.invertEn(true);
 
-    stepper.autoPower(1);   // включаем авто выкл питания
+    digitalWrite(PIN_STEPPER_ENABLE, LOW);   // включаем авто выкл питания
 
-    stepper.setTarget(200);
+    // stepper.setTarget(200);
 }
 
 void loop() {
