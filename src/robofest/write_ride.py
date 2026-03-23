@@ -8,7 +8,7 @@ print('avaliable_ports', avaliable_ports)
 arduino = Arduino(avaliable_ports[0])
 print(arduino)
 
-def execute_command(executor, command, *args):
+def execute_command(executor, command, args):
     try:
         getattr(executor, command)(*args)
         return f'[DOING] {command} with args {args}'
