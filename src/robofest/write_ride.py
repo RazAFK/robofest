@@ -13,7 +13,7 @@ print('[INFO] ', arduino)
 def execute_command(executor, command, args):
     if executor=='code':
         if command=='delay':
-            time.sleep(int(args[0]))
+            time.sleep(float(args[0]))
             return f'[DONE] {command} with args {args}'
 
     try:
