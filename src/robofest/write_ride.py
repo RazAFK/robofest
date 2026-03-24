@@ -45,6 +45,7 @@ while True:
                 ret, exc = check_command(command)
                 if ret:
                     commands.append((exc, command, args))
+                    print(f'[INFO] loaded {command} with args {args} from executor {exc}')
                 else:
                     print(f'[WARN] failed to load {command} with args {args}')
         print('[INFO] load end')
