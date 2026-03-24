@@ -2,8 +2,10 @@ class A:
     p = 10
     def pepa():
         return 1
-    def pupa():
-        return 0
+    def pupa(self, a):
+        return a+1
+    def pupa(self, a, b, c):
+        return a, b, c
 
 class B:
     a = 12
@@ -21,4 +23,6 @@ iterator = iter(index)
 
 print(next(iterator))
 print(next(iterator))
-print(next(iterator))
+
+print(aee.pupa(1))
+print(aee.pupa(1, 2, 3))

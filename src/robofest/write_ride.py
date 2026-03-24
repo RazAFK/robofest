@@ -12,8 +12,8 @@ def execute_command(executor, command, args):
     try:
         getattr(executor, command)(*args)
         return f'[DOING] {command} with args {args}'
-    except:
-        return f'[ERROR] {command} with args {args}'
+    except Exception as e:
+        return f'[ERROR] {command} with args {args}\n[ERROR] {e}'
 
 def check_command(command):
     try:
@@ -25,11 +25,14 @@ def check_command(command):
             return False, None
     return callable(func), executor
 
-
 while True:
     com = input()
     if com=='exit':
         break
+    if com=='com':
+        for exc in (arduino.arm, arduino.whe):
+            for item in [ x for x in dir(exc) if '__' not in x and callable(getattr(exc, x))]:
+                print(f'[INFO] {exc} has attr {item}')
     if com=='load':
         print('[INFO] start loaded program')
         print('[INFO] loading script')
@@ -67,6 +70,6 @@ while True:
     command, *args = com.split('#')
     ret, exc = check_command(command)
     if ret:
-        execute_command(exc, command, args)
+        print(execute_command(exc, command, args))
     else:
-        print('[WARN] wrong command')  
+        print('[WARN] wrong command')

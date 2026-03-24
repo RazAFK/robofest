@@ -13,7 +13,7 @@ queue_size = 5
 queue_delay = 0
 
 #arduino init
-arduino_baudrate = 115200
+arduino_baudrate = 9600
 arduino_timeout = 0.1
 arduino_init_delay = 2
 

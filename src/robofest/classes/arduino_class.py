@@ -14,8 +14,6 @@ class Object:
     def __init__(self, time: datetime.datetime, responce: str):
         self.time = time
         self.responce = responce
-        self.type = responce.split(st.separator)[1]
-        self.args = list(responce.split(st.separator)[2:])
 
     def __str__(self):
         return f'{self.time}: {self.responce}'
@@ -85,11 +83,24 @@ class Arduino:
             self.master.write_com(command)
 
         def move_forward_distance(self, distance):
-            command = self.master.convert_command(self.Commands.moveForward, distance)
+            command = self.master.convert_command(self.Commands.moveForward,
+                st.velocity_front_right,
+                st.velocity_front_left,
+                st.velocity_backward_right,
+                st.velocity_backward_left,
+                distance
+                )
+            print(command)
             self.master.write_com(command)
 
         def move_backward_distance(self, distance):
-            command = self.master.convert_command(self.Commands.moveBackward, distance)
+            command = self.master.convert_command(self.Commands.moveBackward,
+                st.velocity_front_right,
+                st.velocity_front_left,
+                st.velocity_backward_right,
+                st.velocity_backward_left,
+                distance
+                )
             self.master.write_com(command)
 
         def rotate_right(self, distance):

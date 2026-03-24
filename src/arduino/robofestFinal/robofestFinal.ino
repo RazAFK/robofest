@@ -12,7 +12,7 @@
 #define PIN_SCL A5
 #define PIN_SDA A4
 
-#define SEPARATOR '#'
+#define SEPARATOR "#"
 
 // пины сервы захвата
 #define PIN_SERVO_GRAB 7
@@ -379,7 +379,6 @@ void loop() {
 
         MessageHandler::processMessage(msg);
 
-        Serial.println(msg);
     }
 }
 
@@ -496,6 +495,17 @@ void WheelBase::moveForward(float speedFR,
                             float speedBR, 
                             float speedBL, 
                             float distance) {
+    Serial.print(speedFR);
+    Serial.print(" ");
+    Serial.print(speedFL);
+    Serial.print(" ");
+    Serial.print(speedBR);
+    Serial.print(" ");
+    Serial.print(speedBL);
+    Serial.print(" ");
+    Serial.print(distance);
+    Serial.print("\n");
+    
     forwardRight.move(speedFR, distance);
     forwardLeft.move(speedFL, distance);
     backwardRight.move(speedBR, distance);
@@ -570,13 +580,13 @@ void MessageHandler::processMessage(String message) {
     String command;
     float arguments[ARGUMENTS_COUNT] = {0};
     
-    index = message.indexOf(separator);
+    index = message.indexOf(SEPARATOR);
 
     command = message.substring(0, index);
     message.remove(0, index+1);
 
     for (int i = 0; i < ARGUMENTS_COUNT; i++) {
-        index = message.indexOf(separator);
+        index = message.indexOf(SEPARATOR);
         if (index != -1) {
             arguments[i] = message.substring(0, index).toFloat();
             message.remove(0, index+1);
@@ -590,6 +600,7 @@ void MessageHandler::processMessage(String message) {
 }
 
 void MessageHandler::executeCommand(String command, float* arguments) {
+
     //
     // команды для колесной базы
     //
