@@ -6,9 +6,9 @@ from robofest.classes.arduino_class import Arduino, get_available_ports
 import time
 
 avaliable_ports = get_available_ports()
-print('avaliable_ports', avaliable_ports)
+print('[INFO] avaliable_ports', avaliable_ports)
 arduino = Arduino(avaliable_ports[0])
-print(arduino)
+print('[INFO] ', arduino)
 
 def execute_command(executor, command, args):
     try:
@@ -41,7 +41,7 @@ while True:
         with open('src/robofest/ride.txt') as file:
             commands = []
             for line in file:
-                command, *args = com.split('#')
+                command, *args = line.split('#')
                 ret, exc = check_command(command)
                 if ret:
                     commands.append((exc, command, args))
