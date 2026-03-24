@@ -35,8 +35,9 @@ while True:
         for exc in (arduino.arm, arduino.whe):
             for item in [ x for x in dir(exc) if '__' not in x and callable(getattr(exc, x))]:
                 print(f'[INFO] {exc} has attr {item}')
-    if com=='load':
-        print('[INFO] start loaded program')
+    if com.split('#')[0]=='load':
+        delay = com.split('#')[1]
+        print(f'[INFO] start loaded program with delay {delay}')
         print('[INFO] loading script')
         with open('src/robofest/ride.txt') as file:
             commands = []
@@ -55,7 +56,7 @@ while True:
             print('[INFO] executing started')
             for worker in commands:
                 print(execute_command(worker[0], worker[1], worker[-1]))
-                time.sleep(1.5)
+                time.sleep(delay)
 
             # it = iter(commands)
             # working_flag = False
