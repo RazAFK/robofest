@@ -1,9 +1,17 @@
 move_forward_distance#1
+delay#3
 rotate_left#0.45
+delay#1.5
 move_forward_distance#1.4
+delay#4
 rotate_left#0.225
+delay#1
 move_forward_distance#0.25
+delay#1.5
 rotate_right#0.225
+delay#1
 move_forward_distance#0.25
+delay#1.5
 rotate_right#0.225
+delay#1
 move_forward_distance#0.25
