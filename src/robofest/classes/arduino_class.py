@@ -90,7 +90,6 @@ class Arduino:
                 st.velocity_backward_left,
                 distance
                 )
-            print(command)
             self.master.write_com(command)
 
         def move_backward_distance(self, distance):

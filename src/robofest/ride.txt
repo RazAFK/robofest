@@ -1,0 +1,9 @@
+move_forward_distance#1
+rotate_left#0.45
+move_forward_distance#1.4
+rotate_left#0.225
+move_forward_distance#0.25
+rotate_right#0.225
+move_forward_distance#0.25
+rotate_right#0.225
+move_forward_distance#0.25

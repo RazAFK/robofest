@@ -3,6 +3,8 @@ from robofest.settings import limits_settings as lst
 
 from robofest.classes.arduino_class import Arduino, get_available_ports
 
+import time
+
 avaliable_ports = get_available_ports()
 print('avaliable_ports', avaliable_ports)
 arduino = Arduino(avaliable_ports[0])
@@ -26,7 +28,7 @@ def check_command(command):
     return callable(func), executor
 
 while True:
-    com = input()
+    com = input('[INPUT] ')
     if com=='exit':
         break
     if com=='com':
@@ -54,17 +56,22 @@ while True:
             working_flag = False
             worker = next(it)
             while True:
-                if working_flag:
-                    data = arduino.get_data()
-                    if st.Prefixes.move_done in data:
-                        working_flag = False
+                # if working_flag:
+                #     data = arduino.get_data()
+                #     if st.Prefixes.move_done in data:
+                #         working_flag = False
+                #     try:
+                #         worker = next(it)
+                #     except:
+                #         break
+                if not working_flag:
+                    execute_command(worker[0], worker[1], worker[-1])
+                    working_flag = True
+                    time.sleep(1.5)
                     try:
                         worker = next(it)
                     except:
                         break
-                if not working_flag:
-                    execute_command(worker[0], worker[1], worker[-1])
-                    working_flag = True
             print('[INFO] executing ended')
         print('[INFO] end loaded program')
     command, *args = com.split('#')
