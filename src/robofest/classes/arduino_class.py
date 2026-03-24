@@ -127,7 +127,12 @@ class Arduino:
                 distance,
                 )
             self.master.write_com(command)
-        
+
+        def rotate(self, distance):
+            if distance>0:
+                self.rotate_right(distance)
+            else:
+                self.rotate_left(distance)
 
 
     class Arm:

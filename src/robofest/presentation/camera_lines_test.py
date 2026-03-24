@@ -10,10 +10,10 @@ from robofest.functions.lines_handler import handl_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_params
 from robofest.functions.eco_utilities import get_average_between, Params
 
-# arm, arm_q, wheels, wheels_q = init_arduino()
-# print(arm, wheels)
+from robofest.scenes.alignment_by_line import levelout_lines
 
-arm_cam = Camera(0)
+
+cam = Camera(0)
 
 def nothing(x):
     pass
@@ -73,8 +73,8 @@ while True:
     if not(old_limit==limit):
         old_limit=limit
         print(limit)
-    # frame = arm_cam.get_frame()
-    frame = cv2.imread(f'C:/Users/admin/Desktop/line_photos/{index}.jpg')
+    frame = cam.get_frame()
+    # frame = cv2.imread(f'C:/Users/admin/Desktop/line_photos/{index}.jpg')
     # frame = flip(frame, Flip.wheels)
     if frame is None: continue
     lines = handl_lines(frame, limit)
