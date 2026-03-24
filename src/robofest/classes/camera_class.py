@@ -7,10 +7,12 @@ class Flip(StrEnum):
     wheels = 'wheels'
     hand = 'hand'
     debug = 'debug'
+    default = 'default'
 
 def flip(frame: cv2.Mat, flip: Flip):
     if frame is None: return None
     if flip==Flip.debug: return frame
+    if flip==Flip.default: return frame
     if flip==Flip.wheels: return cv2.rotate(frame, cv2.ROTATE_180)
     if flip==Flip.hand: return cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 

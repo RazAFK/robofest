@@ -8,6 +8,7 @@ from robofest.classes.limit_class import Limits
 
 from robofest.functions.lines_handler import handl_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_params
+from robofest.functions.eco_utilities import get_average_between, Params
 
 # arm, arm_q, wheels, wheels_q = init_arduino()
 # print(arm, wheels)
@@ -37,11 +38,19 @@ cv2.createTrackbar('d_min', 'Settings', limit.distance_min, 500, nothing)
 cv2.createTrackbar('d_max', 'Settings', limit.distance_max, 500, nothing)
 
 old_limit = limit
-
+index = 1
 while True:
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
+    if key == ord('.'):
+        if index>=68:
+            index=0
+        index += 1
+    if key == ord(','):
+        if index<=1:
+            index=69
+        index -= 1
 
     x_min = cv2.getTrackbarPos('x_min', 'Settings')/100
     x_max = cv2.getTrackbarPos('x_max', 'Settings')/100
@@ -64,13 +73,18 @@ while True:
     if not(old_limit==limit):
         old_limit=limit
         print(limit)
-    frame = arm_cam.get_frame()
+    # frame = arm_cam.get_frame()
+    frame = cv2.imread(f'C:/Users/admin/Desktop/line_photos/{index}.jpg')
     # frame = flip(frame, Flip.wheels)
     if frame is None: continue
     lines = handl_lines(frame, limit)
     result = drow_lines(frame, lines, (0, 0, 255))
     result = drow_limit(result, limit, (0, 255, 0))
     result = drow_lines_params(result, lines)
+    cv2.putText(result, f'length: {get_average_between(lines, Params.length, length=(0, 1000))}', (20, st.wheels_height-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    cv2.putText(result, f'angle: {get_average_between(lines, Params.angle, angle=(0, 90))}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    cv2.putText(result, f'cord: {get_average_between(lines, Params.position, position=((0,0), (640, 480)))}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    cv2.putText(result, f'{index}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     if result is not None:
         cv2.imshow(f'result', result)
     cv2.imshow('frame', frame)

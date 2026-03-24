@@ -136,12 +136,56 @@ class Arduino:
             return 'arm'
         
         class Commands(StrEnum):
-            moveArm = 'moveArm'
+            moveManipulator = 'moveManipulator'
+            rotateManipulator = 'rotateManipulator'
+            rotateHorizontalRail = 'rotateHorizontalRail'
+            rotateGrabServo = 'rotateGrabServo'
+            moveHorizontalRail = 'moveHorizontalRail'
+            moveVerticalRail = 'moveVerticalRail'
+            getHorizontalPosition = 'getHorizontalPosition'
+            getRailServoDegrees = 'getRailServoDegrees'
+            getManipulatorServoDegrees = 'getManipulatorServoDegrees'
+            getGrabServoDegrees = 'getGrabServoDegrees'
         
         def __init__(self, master: Arduino):
             self.master = master
 
-        def move_manipulator(self, x, y):
-            command = self.master.convert_command(self.Commands.moveArm, x, y)
+        def move_manipulator(self, horizontal_pos, horizontal_deg):
+            command = self.master.convert_command(self.Commands.moveManipulator, horizontal_pos, horizontal_deg)
             self.master.write_com(command)
 
+        def rotate_manipulator(self, degrees):
+            command = self.master.convert_command(self.Commands.rotateManipulator, degrees)
+            self.master.write_com(command)
+
+        def rotate_horizontal_rail(self, degrees):
+            command = self.master.convert_command(self.Commands.rotateHorizontalRail, degrees)
+            self.master.write_com(command)
+
+        def rotate_grab_servo(self, degrees):
+            command = self.master.convert_command(self.Commands.rotateGrabServo, degrees)
+            self.master.write_com(command)
+
+        def move_horizontal_rail(self, absolute_position):
+            command = self.master.convert_command(self.Commands.moveHorizontalRail, absolute_position)
+            self.master.write_com(command)
+        
+        def move_vertical_rail(self, reltive_position):
+            command = self.master.convert_command(self.Commands.moveVerticalRail, reltive_position)
+            self.master.write_com(command)
+        
+        def get_horizontal_position(self):
+            command = self.master.convert_command(self.Commands.getHorizontalPosition)
+            self.master.write_com(command)
+
+        def get_rail_servo_degrees(self):
+            command = self.master.convert_command(self.Commands.getRailServoDegrees)
+            self.master.write_com(command)
+
+        def get_manipulator_servo_degrees(self):
+            command = self.master.convert_command(self.Commands.getManipulatorServoDegrees)
+            self.master.write_com(command)
+
+        def get_grab_servo_degrees(self):
+            command = self.master.convert_command(self.Commands.getGrabServoDegrees)
+            self.master.write_com(command)

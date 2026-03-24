@@ -8,7 +8,7 @@ from robofest.functions.lines_handler import handl_lines, handl_lines_by
 
 from datetime import datetime
 
-def levelout_lines(cam: Camera, limit: Limits, arduino: Arduino, line_count: int, cam_flip: Flip = Flip.wheels):
+def levelout_lines(cam: Camera, limit: Limits, arduino: Arduino, line_count: int, cam_flip: Flip = Flip.default):
     arduino.whe.rotate_right(2)
 
     move_flag = True
@@ -24,6 +24,8 @@ def levelout_lines(cam: Camera, limit: Limits, arduino: Arduino, line_count: int
         lines = handl_lines(frame, limit)
         if len(lines)==line_count:
             move_flag = False
+    
+    arduino.whe.move_stop()
     
 
     

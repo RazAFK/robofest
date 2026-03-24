@@ -339,12 +339,12 @@ void setup () {
     pinMode(PIN_STEPPER_ENABLE, OUTPUT);
     pinMode(PIN_STEPPER_STEP, OUTPUT);
 
-    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 0);
-    // railRotationServo.smoothStart();
-    // railRotationServo.setMaxAngle(270);
-    // railRotationServo.setSpeed(60);         // ограничить скорость
-    // railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
-    // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
+    railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 90);
+    railRotationServo.smoothStart();
+    railRotationServo.setMaxAngle(270);
+    railRotationServo.setSpeed(60);         // ограничить скорость
+    railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
+    railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
 
     horizontalRailMotor.autoPower(true);
     horizontalRailMotor.setRunMode(FOLLOW_POS);
@@ -352,8 +352,8 @@ void setup () {
     horizontalRailMotor.setMaxSpeed(800);
     horizontalRailMotor.setAcceleration(800);
 
-    // grabServo.attach(PIN_SERVO_GRAB);
-    // manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
+    grabServo.attach(PIN_SERVO_GRAB);
+    manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
 
     forwardRight.begin(&sWire);
     forwardLeft.begin(&sWire);
@@ -495,16 +495,6 @@ void WheelBase::moveForward(float speedFR,
                             float speedBR, 
                             float speedBL, 
                             float distance) {
-    Serial.print(speedFR);
-    Serial.print(" ");
-    Serial.print(speedFL);
-    Serial.print(" ");
-    Serial.print(speedBR);
-    Serial.print(" ");
-    Serial.print(speedBL);
-    Serial.print(" ");
-    Serial.print(distance);
-    Serial.print("\n");
     
     forwardRight.move(speedFR, distance);
     forwardLeft.move(speedFL, distance);
