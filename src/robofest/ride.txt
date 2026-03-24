@@ -1,4 +1,4 @@
-move_forward_distance#1
+move_forward_distance#0.65
 delay#3
 rotate_left#0.45
 delay#1.5
