@@ -38,7 +38,7 @@ while True:
     if com=='load':
         print('[INFO] start loaded program')
         print('[INFO] loading script')
-        with open('ride.txt') as file:
+        with open('src/robofest/ride.txt') as file:
             commands = []
             for line in file:
                 command, *args = com.split('#')
