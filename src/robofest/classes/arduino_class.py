@@ -68,6 +68,10 @@ class Arduino:
         except queue.Empty: return None
 
     class Whe:
+
+        def __str__(self):
+            return 'wheels'
+
         class Commands(StrEnum):
             moveForward = 'moveForward'
             moveBackward = 'moveBackward'
@@ -127,6 +131,10 @@ class Arduino:
 
 
     class Arm:
+
+        def __str__(self):
+            return 'arm'
+        
         class Commands(StrEnum):
             moveArm = 'moveArm'
         

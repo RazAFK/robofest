@@ -41,7 +41,7 @@ while True:
         with open('src/robofest/ride.txt') as file:
             commands = []
             for line in file:
-                command, *args = line.split('#')
+                command, *args = line.strip().split('#')
                 ret, exc = check_command(command)
                 if ret:
                     commands.append((exc, command, args))
