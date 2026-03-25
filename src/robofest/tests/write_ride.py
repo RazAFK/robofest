@@ -7,7 +7,8 @@ import time
 
 avaliable_ports = get_available_ports()
 print('[INFO] avaliable_ports', avaliable_ports)
-arduino = Arduino(avaliable_ports[0])
+# arduino = Arduino(avaliable_ports[0])
+arduino = Arduino('COM9')
 print('[INFO] ', arduino)
 
 def execute_command(executor, command, args):
@@ -45,7 +46,7 @@ while True:
     if com=='load':
         print(f'[INFO] start loaded program')
         print('[INFO] loading script')
-        with open('src/robofest/ride.txt') as file:
+        with open('src/robofest/tests/ride.txt') as file:
             commands = []
             for line in file:
                 command, *args = line.strip().split('#')

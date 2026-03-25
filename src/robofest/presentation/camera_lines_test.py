@@ -13,7 +13,7 @@ from robofest.functions.eco_utilities import get_average_between, Params
 from robofest.scenes.alignment_by_line import levelout_lines
 
 
-cam = Camera(0)
+cam = Camera(2)
 
 def nothing(x):
     pass
@@ -21,7 +21,7 @@ def nothing(x):
 limit = Limits((st.wheels_width, st.wheels_height),
                distance=(0, 500),
                length=(0, 500),
-               angle=(-90, 90),
+               angle=(0, 90),
                x_bounds=(0, 1),
                y_bounds=(0, 1))
 
@@ -37,11 +37,24 @@ cv2.createTrackbar('l_max', 'Settings', limit.length_max, 500, nothing)
 cv2.createTrackbar('d_min', 'Settings', limit.distance_min, 500, nothing)
 cv2.createTrackbar('d_max', 'Settings', limit.distance_max, 500, nothing)
 
+cv2.namedWindow('Set')
+cv2.resizeWindow('Set', 1920, 480)
+cv2.createTrackbar('x_min', 'Set', 0, 640, nothing)
+cv2.createTrackbar('x_max', 'Set', 640, 640, nothing)
+cv2.createTrackbar('y_min', 'Set', 0, 480, nothing)
+cv2.createTrackbar('y_max', 'Set', 480, 480, nothing)
+cv2.createTrackbar('a_min', 'Set', 90+0, 180, nothing)
+cv2.createTrackbar('a_max', 'Set', 90+90, 180, nothing)
+cv2.createTrackbar('l_min', 'Set', 0, 500, nothing)
+cv2.createTrackbar('l_max', 'Set', 500, 500, nothing)
+
 old_limit = limit
 index = 1
+angles = []
 while True:
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
+        print('angle', sum(angles)/len(angles))
         break
     if key == ord('.'):
         if index>=68:
@@ -81,9 +94,20 @@ while True:
     result = drow_lines(frame, lines, (0, 0, 255))
     result = drow_limit(result, limit, (0, 255, 0))
     result = drow_lines_params(result, lines)
-    cv2.putText(result, f'length: {get_average_between(lines, Params.length, length=(0, 1000))}', (20, st.wheels_height-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    cv2.putText(result, f'angle: {get_average_between(lines, Params.angle, angle=(0, 90))}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    cv2.putText(result, f'cord: {get_average_between(lines, Params.position, position=((0,0), (640, 480)))}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    x_n= cv2.getTrackbarPos('x_min', 'Set')/100
+    x_x = cv2.getTrackbarPos('x_max', 'Set')/100
+    y_n = cv2.getTrackbarPos('y_min', 'Set')/100
+    y_x = cv2.getTrackbarPos('y_max', 'Set')/100
+    a_n = cv2.getTrackbarPos('a_min', 'Set')-90
+    a_x = cv2.getTrackbarPos('a_max', 'Set')-90
+    l_n = cv2.getTrackbarPos('l_min', 'Set')
+    l_x = cv2.getTrackbarPos('l_max', 'Set')
+    angle = get_average_between(lines, Params.angle, angle=(a_min, a_max))
+    if angle is not None:
+        angles.append(angle)
+    cv2.putText(result, f'length: {get_average_between(lines, Params.length, length=(l_min, l_max))}', (20, st.wheels_height-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    cv2.putText(result, f'angle: {angle}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+    cv2.putText(result, f'cord: {get_average_between(lines, Params.position, position=((x_min, x_max), (y_min, y_max)))}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     cv2.putText(result, f'{index}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     if result is not None:
         cv2.imshow(f'result', result)
