@@ -15,18 +15,18 @@
 #define SEPARATOR "#"
 
 // пины сервы захвата
-#define PIN_SERVO_GRAB 9
+#define PIN_SERVO_GRAB 8
 
 // пины сервы поворота клешни
-#define PIN_SERVO_MANIPULATOR_ROTATION 8
+#define PIN_SERVO_MANIPULATOR_ROTATION 9
 
 // пины сервы поворота горизонтальной рейки
 #define PIN_SERVO_RAIL_ROTATION 4
 
 // пины мотора на горизонтальной рейке
-#define PIN_STEPPER_DIR 3
+#define PIN_STEPPER_DIR 1
 #define PIN_STEPPER_STEP 2
-#define PIN_STEPPER_ENABLE 1
+#define PIN_STEPPER_ENABLE 3
 #define STEPPER_STEPS_PER_ROUND 200 // количество шагов для 1 оборота
 
 // вертикальная рейка
@@ -43,7 +43,7 @@
 #define VERTICAL_RAIL_MOTOR_DEFAULT_DIRECTION true
 
 // I2C адрес мотора вертикальной рейки
-#define ADDRESS_VERTICAL_RAIL_MOTOR 0x0B
+#define ADDRESS_VERTICAL_RAIL_MOTOR 0x0C
 
 // колесная база
 // характеристики моторов (на колесной базе они одинаковые)
@@ -61,9 +61,9 @@
 #define WHEEL_DEFAULT_DIRECTION_BACKWARD_LEFT false
 
 // I2C адреса колес
-#define ADDRESS_FORWARD_RIGHT 0x0D
-#define ADDRESS_FORWARD_LEFT 0x0C
-#define ADDRESS_BACKWARD_RIGHT 0x09
+#define ADDRESS_FORWARD_RIGHT 0x0B
+#define ADDRESS_FORWARD_LEFT 0x09
+#define ADDRESS_BACKWARD_RIGHT 0x0D
 #define ADDRESS_BACKWARD_LEFT 0x0A
 
 class EncoderMotor {
@@ -109,7 +109,7 @@ class WheelMotor : public EncoderMotor {
                      reducer, 
                      wheelRadius, 
                      defaultDirection) {}
-    void move(float speed, float distance = -1.0f);
+    void move(float speed, float distance);
     bool checkIfStop();
     
 };
@@ -172,6 +172,8 @@ class Manipulator {
 };
 
 class WheelBase {
+    int timer = 0;
+
     WheelMotor& forwardRight;
     WheelMotor& forwardLeft;
     WheelMotor& backwardRight;
@@ -348,18 +350,15 @@ void setup () {
     railRotationServo.setMaxAngle(270);
     railRotationServo.setSpeed(60);         // ограничить скорость
     railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
-    railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
-    railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 180);
-    railRotationServo.smoothStart();
+    // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
+    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 180);
+    // railRotationServo.smoothStart();
 
     horizontalRailMotor.autoPower(true);
     horizontalRailMotor.setRunMode(FOLLOW_POS);
     horizontalRailMotor.reverse(true);
     horizontalRailMotor.setMaxSpeed(800);
     horizontalRailMotor.setAcceleration(800);
-
-    grabServo.attach(PIN_SERVO_GRAB);
-    manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
 
     forwardRight.begin(&sWire);
     forwardLeft.begin(&sWire);
@@ -373,13 +372,17 @@ void setup () {
 
 String msg; // буфер для полученных сообщений
 
+bool kostyl;  // для сервы поворота рейки
+bool kostyl2; // для горизонтальной рейки
+
 void loop() {
     railRotationServo.tick();
+
     if(horizontalRailMotor.tick()) {
         Serial.print(NULL);
     }
 
-    verticalRailMotor.stopIfStuck();
+    // verticalRailMotor.stopIfStuck();
 
     if(wheelBase.checkIfStop()) {
         String arg[] = {"moveDone"};
@@ -434,6 +437,7 @@ void WheelMotor::move(float speed, float distance) {
 }
 
 bool WheelMotor::checkIfStop() {
+    // return false;
     return (isMoving == true &&
             this->getTarget() == 0.0f);
 }
@@ -470,6 +474,8 @@ void Manipulator::moveManipulator(int manipulatorPosition, int servoDegrees, int
 }
 
 void Manipulator::rotateRail(int degs) {
+    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 180);
+    // railRotationServo.smoothStart();
     railRotationServo.setTargetDeg(degs);
 }
 
@@ -478,6 +484,7 @@ void Manipulator::moveHorizontalRail(int position) {
 }
 
 void Manipulator::grab(int rotateServoDegrees, int grabServoDegrees) {
+    return;
     this->moveVerticalRail(true);
     this->rotateManipulator(rotateServoDegrees);
 }
@@ -487,11 +494,21 @@ void Manipulator::moveVerticalRail(float speed) {
 }
 
 void Manipulator::rotateManipulator(int degs) {
+    manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
     manipulatorRotationServo.write(degs);
+    // manipulatorRotationServo.detach();
+    String arg[] = {"moveDone"};
+    MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                arg);
 }
 
 void Manipulator::rotateGrabServo(int degs) {
+    grabServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
     grabServo.write(degs);
+    // grabServo.detach();
+    String arg[] = {"moveDone"};
+    MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                arg);
 }
 
 int Manipulator::getGrabServoDegrees() {
@@ -592,10 +609,14 @@ void WheelBase::stop() {
 }
 
 bool WheelBase::checkIfStop() {
-    return (forwardRight.checkIfStop() &&
-            forwardLeft.checkIfStop() &&
-            backwardRight.checkIfStop() &&
-            backwardLeft.checkIfStop());
+    // if (millis() - timer > 200) {
+    //     timer = millis();
+        return (forwardRight.checkIfStop() &&
+                forwardLeft.checkIfStop() &&
+                backwardRight.checkIfStop() &&
+                backwardLeft.checkIfStop());
+    // }
+    // return false;
 }
 //
 // методы класса MessageHandler
