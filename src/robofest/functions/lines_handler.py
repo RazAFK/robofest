@@ -44,7 +44,6 @@ def get_lines(edges):
     return class_lines
 
 def filter_lines(lines, limit: Limits):
-    
     new_lines = []
     if lines is not None:
         for line in lines:

@@ -5,6 +5,7 @@ from robofest.settings import settings as st
 from robofest.classes.camera_class import Camera, Flip, flip
 from robofest.classes.limit_class import Limits
 from robofest.classes.pid_class import PID
+from robofest.classes.arduino_class import Arduino
 
 from robofest.functions.lines_handler import process_lines, get_lines, handl_lines, process_frame, filter_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_params
@@ -44,10 +45,19 @@ frame_wait = 10
 frame_counter = 0
 
 last_time = time.time()
-target_angle = 87.5
+target_angle = 89
 pid_flag = True
 
-pid = PID(kp=0.0005, ki=0.0, kd=0.0)
+none_counter = 0
+none_max = 5
+
+pid = PID(kp=0.0005, ki=0.0001, kd=0.0001)
+
+moving_flag = False
+
+arduino = Arduino('COM4')
+
+start_time = time.time()
 
 while True:
     key = cv2.waitKey(1) & 0xFF
@@ -56,16 +66,25 @@ while True:
         if len(lengths)>0: print('length', sum(lengths)/len(lengths))
         if len(positions)>0: print('position', (round(float(sum([x[0] for x in positions])/len(positions)),2), round(float(sum([x[-1] for x in positions])/len(positions)),2)))
         break
+    if moving_flag:
+        if time.time()-start_time<2:
+            continue
+        else:
+            moving_flag = False
     frame = cam.get_frame()
     if frame is None: continue
 
-    new_lines = handl_lines(frame, limit)
+    new_lines = get_lines(process_frame(frame))
     old_lines = process_lines(old_lines, new_lines)
+    # print(new_lines)
+    # print(max(new_lines, key=lambda x: x.length).length)
+    # print(sum([x.length for x in new_lines])/len(new_lines))
 
     if frame_counter<frame_wait:
         frame_counter+=1
         continue
     else: frame_counter = 0
+
     x_min = cv2.getTrackbarPos('x_min', 'Settings')
     x_max = cv2.getTrackbarPos('x_max', 'Settings')
     y_min = cv2.getTrackbarPos('y_min', 'Settings')
@@ -93,6 +112,8 @@ while True:
     if position is not None:
         positions.append(position)
 
+    old_lines = filter_lines(old_lines, limit)
+    
     result = drow_lines(frame, old_lines, (0, 0, 255))
     result = drow_limit(result, limit, (0, 255, 0))
     # result = drow_lines_params(result, old_lines)
@@ -100,29 +121,40 @@ while True:
     cv2.putText(result, f'length: {length}', (20, st.wheels_height-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     cv2.putText(result, f'angle: {angle}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     cv2.putText(result, f'position: {position}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    
+
     now = time.time()
     dt = now - last_time
-    if dt>1:
-        if angle is not None:
-            if pid_flag:
+    print(dt)
+    if pid_flag:
+        if dt>1 and not moving_flag:
+            if angle is not None:
+                none_counter = 0
                 current_angle = angle
                 
-
                 rotation_speed = pid.compute(target_angle, current_angle, dt)
                 rotation_speed = round(max(min(rotation_speed, 0.45), -0.45), 4)
                 print(rotation_speed)
 
-                if abs(target_angle - current_angle) < 0.5:
-                    print('pid done')
+                if abs(target_angle - current_angle) < 0.02:
+                    print('pid done at', current_angle)
+                    # if current_angle==90:
+                    #     arduino.whe.rotate(-0.002)
                     pid_flag = False
                 
+                if rotation_speed!=0 and pid_flag:
+                    arduino.whe.rotate(rotation_speed)
+                    moving_flag = True
+                
                 last_time = now
+            else:
+                none_counter += 1
+                if none_counter>=none_max:
+                    arduino.whe.rotate(-0.003)
+                    moving_flag = True
 
     if result is not None:
         cv2.imshow(f'result', result)
+    print(len(old_lines))
     old_lines = []
-
-
 
     cv2.imshow('frame', frame)

@@ -8,7 +8,7 @@ import time
 avaliable_ports = get_available_ports()
 print('[INFO] avaliable_ports', avaliable_ports)
 # arduino = Arduino(avaliable_ports[0])
-arduino = Arduino('COM9')
+arduino = Arduino('COM4')
 print('[INFO] ', arduino)
 
 def execute_command(executor, command, args):

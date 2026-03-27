@@ -9,7 +9,7 @@ from robofest.functions.center_handler import get_center_contour, get_storage_ce
 from robofest.functions.lines_handler import handl_lines
 from robofest.functions.math_funcs import get_step_angle, get_coords
 
-from robofest.scenes.alignment_by_line import levelout_lines
+from robofest.scenes.alignment import levelout_lines
 
 import cv2
 

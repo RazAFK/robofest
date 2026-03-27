@@ -12,7 +12,7 @@ from robofest.functions.eco_utilities import get_average_between, Params
 
 
 
-cam = Camera(2)
+cam = Camera(1)
 
 def nothing(x):
     pass

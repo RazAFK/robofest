@@ -1,11 +1,13 @@
 import datetime
 
 class PID:
-    def __init__(self, kp, ki, kd):
+    def __init__(self, kp, ki, kd, admission):
         self.kp = kp
         
         self.ki = ki
         self.kd = kd
+        self.admission = admission
+        
         self.prev_error = 0
         self.integral = 0
 
