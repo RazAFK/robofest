@@ -61,7 +61,6 @@ class Limits:
     
     def contains_segment(self, s: Segment):
         return self.filter_segment_by(s,
-            self.conditions.distance,
             self.conditions.angle,
             self.conditions.length,
             self.conditions.contains_points

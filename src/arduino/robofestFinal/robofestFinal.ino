@@ -136,17 +136,17 @@ class VerticalRailMotor : public EncoderMotor {
 
 class Manipulator {
     Servo& grabServo;
-    Servo& manipulatorRotationServo;
+    ServoSmooth& manipulatorRotationServo;
     ServoSmooth& railRotationServo;
     GStepper<STEPPER2WIRE>& horizontalRailMotor;
     VerticalRailMotor& verticalRailMotor;
 
     public:
     Manipulator(Servo& grabServo, 
-         Servo& manipulatorRotationServo, 
-         ServoSmooth& railRotationServo, 
-         GStepper<STEPPER2WIRE>& horizontalRailMotor, 
-         VerticalRailMotor& verticalRailMotor) :
+                ServoSmooth& manipulatorRotationServo, 
+                ServoSmooth& railRotationServo, 
+                GStepper<STEPPER2WIRE>& horizontalRailMotor, 
+                VerticalRailMotor& verticalRailMotor) :
         grabServo(grabServo),
         manipulatorRotationServo(manipulatorRotationServo),
         railRotationServo(railRotationServo),
@@ -214,18 +214,18 @@ class WheelBase {
                     float speedBR, 
                     float speedBL, 
                     float distance);
-    // void virtual moveRight(float speed, float distance); // езда крабом
-    // void moveRight(float speedFR, 
-    //                float speedFL, 
-    //                float speedBR, 
-    //                float speedBL, 
-    //                float distance);
-    // void virtual moveLeft(float speed, float distance);
-    // void moveLeft(float speedFR, 
-    //               float speedFL, 
-    //               float speedBR, 
-    //               float speedBL, 
-    //               float distance);
+    void virtual moveRight(float speed, float distance); // езда крабом
+    void moveRight(float speedFR, 
+                   float speedFL, 
+                   float speedBR, 
+                   float speedBL, 
+                   float distance);
+    void virtual moveLeft(float speed, float distance);
+    void moveLeft(float speedFR, 
+                  float speedFL, 
+                  float speedBR, 
+                  float speedBL, 
+                  float distance);
     void stop();
     bool checkIfStop();
 };
@@ -280,7 +280,7 @@ const String MessageHandler::prefixes[] = {
 SoftTwoWire sWire(PIN_SDA, PIN_SCL);
 
 Servo grabServo;
-Servo manipulatorRotationServo;
+ServoSmooth manipulatorRotationServo;
 
 ServoSmooth railRotationServo;
 
@@ -351,8 +351,8 @@ void setup () {
     railRotationServo.setSpeed(60);         // ограничить скорость
     railRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
     // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
-    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 180);
-    // railRotationServo.smoothStart();
+    railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 180);
+    railRotationServo.smoothStart();
 
     horizontalRailMotor.autoPower(true);
     horizontalRailMotor.setRunMode(FOLLOW_POS);
@@ -360,31 +360,87 @@ void setup () {
     horizontalRailMotor.setMaxSpeed(800);
     horizontalRailMotor.setAcceleration(800);
 
+    manipulatorRotationServo.setMaxAngle(180);
+    manipulatorRotationServo.setSpeed(90);         // ограничить скорость
+    manipulatorRotationServo.setAccel(0);          // установить ускорение (разгон и торможение)
+    // railRotationServo.setAutoDetach(false); // отключить автоотключение (detach) при достижении целевого угла (по умолчанию включено)
+    manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
+    manipulatorRotationServo.smoothStart();
+
+    // grabServo.attach(PIN_SERVO_GRAB);
+
     forwardRight.begin(&sWire);
     forwardLeft.begin(&sWire);
     backwardRight.begin(&sWire);
     backwardLeft.begin(&sWire);
     verticalRailMotor.begin(&sWire);
 
+    // delay(2000);
+
+    // wheelBase.moveForward(0.3f, 0.6f);
+
+    // delay(3000);
+
+    // wheelBase.moveBackward(0.3f, 0.6f);
+
+    // delay(3000);
+
+    // wheelBase.moveRight(0.3f, 0.3f);
+
+    // delay(2000);
+
+    // wheelBase.moveLeft(0.3f, 0.3f);
+
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
+
+    // manipulatorRotationServo.setTargetDeg(0);
+    // railRotationServo.setTargetDeg(180);
 }
 
 String msg; // буфер для полученных сообщений
 
-bool kostyl;  // для сервы поворота рейки
-bool kostyl2; // для горизонтальной рейки
+bool kostyl1 = false;  // для сервы поворота рейки
+bool kostyl2 = false;  // для горизонтальной рейки (шаговый)
+bool kostyl3 = false;  // для хватательной сервы
+bool kostyl4 = false;  // для вращательной сервы
 
 void loop() {
-    railRotationServo.tick();
+    if (kostyl1 == true && railRotationServo.tick()) {
+        String arg[] = {"moveDone"};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    arg);
+        kostyl1 = false;
+    }
+
+    if (kostyl4 == true && manipulatorRotationServo.tick()) {
+        String arg[] = {"moveDone"};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    arg);
+        kostyl4 = false;
+    }
+
+    // if (kostyl3 == true && targetGrab == grabServo.read()) {
+    //     grabServo.detach();
+    //     String arg[] = {"moveDone"};
+    //     MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+    //                                 arg);
+    //     kostyl3 = false;
+    // }
 
     if(horizontalRailMotor.tick()) {
         Serial.print(NULL);
     }
+    else if (kostyl2 == true) {
+        String arg[] = {"moveDone"};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    arg);
+        kostyl2 = false;
+    }
 
     // verticalRailMotor.stopIfStuck();
 
-    if(wheelBase.checkIfStop()) {
+    if(wheelBase.checkIfStop() == true) {
         String arg[] = {"moveDone"};
         MessageHandler::sendMessage(MessageHandler::prefix::WHEELS,
                                     arg);
@@ -474,8 +530,7 @@ void Manipulator::moveManipulator(int manipulatorPosition, int servoDegrees, int
 }
 
 void Manipulator::rotateRail(int degs) {
-    // railRotationServo.attach(PIN_SERVO_RAIL_ROTATION, 500, 2500, 180);
-    // railRotationServo.smoothStart();
+    kostyl1 = true;
     railRotationServo.setTargetDeg(degs);
 }
 
@@ -494,18 +549,21 @@ void Manipulator::moveVerticalRail(float speed) {
 }
 
 void Manipulator::rotateManipulator(int degs) {
-    manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
-    manipulatorRotationServo.write(degs);
-    // manipulatorRotationServo.detach();
-    String arg[] = {"moveDone"};
-    MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
-                                arg);
+    // manipulatorRotationServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
+    // manipulatorRotationServo.write(degs);
+    // // manipulatorRotationServo.detach();
+    // String arg[] = {"moveDone"};
+    // MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+    //                             arg);
+    manipulatorRotationServo.setTargetDeg(degs);
+    kostyl4 = true;
 }
 
 void Manipulator::rotateGrabServo(int degs) {
-    grabServo.attach(PIN_SERVO_MANIPULATOR_ROTATION);
+    grabServo.attach(PIN_SERVO_GRAB, 500, 2400);
     grabServo.write(degs);
-    // grabServo.detach();
+    delay(500); // план Б, егор иди нахуй мне похуй нахуй
+    grabServo.detach();
     String arg[] = {"moveDone"};
     MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
                                 arg);
@@ -516,7 +574,7 @@ int Manipulator::getGrabServoDegrees() {
 }
 
 int Manipulator::getManipulatorRotationServoDegrees() {
-    return manipulatorRotationServo.read();
+    return manipulatorRotationServo.getCurrent();
 }
 
 int Manipulator::getRailRotationServoDegrees() {
@@ -599,6 +657,44 @@ void WheelBase::rotateLeft(float speedFR,
     forwardLeft.move(-speedFL, distance);
     backwardRight.move(speedBR, distance);
     backwardLeft.move(-speedBL, distance);
+}
+
+void WheelBase::moveRight(float speed, float distance) {
+    forwardRight.move(-speed, distance);
+    forwardLeft.move(speed, distance);
+    backwardRight.move(speed, distance);
+    backwardLeft.move(-speed, distance);
+}
+
+
+void WheelBase::moveRight(float speedFR, 
+                            float speedFL, 
+                            float speedBR, 
+                            float speedBL, 
+                            float distance) {
+    forwardRight.move(-speedFR, distance);
+    forwardLeft.move(speedFL, distance);
+    backwardRight.move(speedBR, distance);
+    backwardLeft.move(-speedBL, distance);
+}
+
+void WheelBase::moveLeft(float speed, float distance) {
+    forwardRight.move(speed, distance);
+    forwardLeft.move(-speed, distance);
+    backwardRight.move(-speed, distance);
+    backwardLeft.move(speed, distance);
+}
+
+
+void WheelBase::moveLeft(float speedFR, 
+                            float speedFL, 
+                            float speedBR, 
+                            float speedBL, 
+                            float distance) {
+    forwardRight.move(speedFR, distance);
+    forwardLeft.move(-speedFL, distance);
+    backwardRight.move(-speedBR, distance);
+    backwardLeft.move(speedBL, distance);
 }
 
 void WheelBase::stop() {

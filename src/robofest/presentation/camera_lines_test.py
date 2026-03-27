@@ -10,7 +10,6 @@ from robofest.functions.lines_handler import handl_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_params
 from robofest.functions.eco_utilities import get_average_between, Params
 
-from robofest.scenes.alignment_by_line import levelout_lines
 
 
 cam = Camera(2)
