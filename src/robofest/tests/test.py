@@ -1,5 +1,4 @@
-from math import sin, radians
+import time
 
-b = sin(radians(54))*(5.5+7)
-print(b)
-print((45-b)/sin(radians(54)) + 4)
+print(time.time()/60/60/24/365)
+time.time()

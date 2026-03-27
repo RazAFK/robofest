@@ -383,14 +383,6 @@ void setup () {
 
     // wheelBase.moveBackward(0.3f, 0.6f);
 
-    // delay(3000);
-
-    // wheelBase.moveRight(0.3f, 0.3f);
-
-    // delay(2000);
-
-    // wheelBase.moveLeft(0.3f, 0.3f);
-
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
 
@@ -438,7 +430,7 @@ void loop() {
         kostyl2 = false;
     }
 
-    // verticalRailMotor.stopIfStuck();
+    verticalRailMotor.stopIfStuck();
 
     if(wheelBase.checkIfStop() == true) {
         String arg[] = {"moveDone"};
@@ -535,7 +527,7 @@ void Manipulator::rotateRail(int degs) {
 }
 
 void Manipulator::moveHorizontalRail(int position) {
-    horizontalRailMotor.setTarget(position);
+    horizontalRailMotor.setTarget(position, ABSOLUTE);
 }
 
 void Manipulator::grab(int rotateServoDegrees, int grabServoDegrees) {

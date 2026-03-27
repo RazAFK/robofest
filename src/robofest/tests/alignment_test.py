@@ -14,11 +14,11 @@ from robofest.scenes.alignment_by_line import levelout_lines
 import cv2
 
 avaliable_ports = get_available_ports()
-arduino = Arduino('COM9')
+arduino = Arduino('COM4')
 
-cam = Camera(2)
+cam = Camera(1)
 
-levelout_lines(cam, arduino, [88.5, 1, (1,1)])
+levelout_lines(cam, arduino, [87, 1, (1,1)])
 # cv2.destroyAllWindows()
 while True:
     key = cv2.waitKey(1) & 0xFF

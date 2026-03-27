@@ -5,7 +5,7 @@ from robofest.classes.limit_class import Limits
 from robofest.classes.arduino_class import Arduino
 from robofest.classes.pid_class import PID
 
-from robofest.functions.lines_handler import get_lines, process_frame
+from robofest.functions.lines_handler import get_lines, process_frame, handl_lines, process_lines
 from robofest.functions.eco_utilities import get_average_between, Params
 from robofest.functions.drow_funcs import drow_lines, drow_lines_params
 
@@ -27,15 +27,34 @@ def levelout_lines(cam: Camera, arduino: Arduino, target: tuple, cam_flip: Flip 
     
     last_time = time.time()
 
+    old_lines = []
+
+    frame_wait = 10
+    frame_counter = 0
+
+    limit = Limits(
+        sizes=(st.wheels_width, st.wheels_height),
+        distance=(0, 1000),
+        length=(200, 1000),
+        angle=(-90, 90),
+        x_bounds=(0, st.wheels_width),
+        y_bounds=(0, st.wheels_height)
+    )
+
     while True:
 
         frame = cam.get_frame()
-        lines = get_lines(process_frame(frame))
-        if lines is None:
-            print('no lines')
-            continue
 
-        current_angle = get_average_between(lines, Params.angle, length=(150, 1000), angle=(0, 90))
+        
+        new_lines = handl_lines(frame, limit)
+        old_lines = process_lines(old_lines, new_lines)
+
+        if frame_counter<frame_wait:
+            frame_counter+=1
+            continue
+        else: frame_counter = 0
+        
+        current_angle = get_average_between(old_lines, Params.angle, length=(limit.length_min, limit.length_max), angle=(limit.angle_min, limit.angle_max))
         if current_angle is None: 
             print('no angle')
             continue
@@ -54,9 +73,9 @@ def levelout_lines(cam: Camera, arduino: Arduino, target: tuple, cam_flip: Flip 
         print(rotation_speed)
         # frame = drow_lines(frame, lines, (0, 0, 255))
         # frame = drow_lines_params(frame, lines)
-        cv2.putText(frame, f'length: {get_average_between(lines, Params.length, length=(150, 1000))}', (20, st.wheels_height-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-        cv2.putText(frame, f'angle: {get_average_between(lines, Params.angle, angle=(0, 90))}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-        cv2.putText(frame, f'cord: {get_average_between(lines, Params.position, position=((0,0), (640, 480)))}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(frame, f'length: {get_average_between(old_lines, Params.length, length=(150, 1000))}', (20, st.wheels_height-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(frame, f'angle: {get_average_between(old_lines, Params.angle, angle=(0, 90))}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(frame, f'cord: {get_average_between(old_lines, Params.position, position=((0,0), (640, 480)))}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
         cv2.imshow('frame', frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'): break

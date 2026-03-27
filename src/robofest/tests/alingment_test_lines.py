@@ -4,12 +4,13 @@ from robofest.settings import settings as st
 
 from robofest.classes.camera_class import Camera, Flip, flip
 from robofest.classes.limit_class import Limits
+from robofest.classes.pid_class import PID
 
 from robofest.functions.lines_handler import process_lines, get_lines, handl_lines, process_frame, filter_lines
 from robofest.functions.drow_funcs import drow_lines, drow_limit, drow_lines_params
 from robofest.functions.eco_utilities import get_average_between, Params
 
-cam = Camera(0)
+cam = Camera(1)
 
 def nothing(x):
     pass
@@ -21,13 +22,13 @@ cv2.createTrackbar('y_min', 'Settings', 0, st.cap_height, nothing)
 cv2.createTrackbar('y_max', 'Settings', st.cap_height, st.cap_height, nothing)
 cv2.createTrackbar('a_min', 'Settings', 90+0, 180, nothing)
 cv2.createTrackbar('a_max', 'Settings', 90+90, 180, nothing)
-cv2.createTrackbar('l_min', 'Settings', 0, 1000, nothing)
+cv2.createTrackbar('l_min', 'Settings', 200, 1000, nothing)
 cv2.createTrackbar('l_max', 'Settings', 1000, 1000, nothing)
 
 limit = Limits(
         sizes=(st.wheels_width, st.wheels_height),
         distance=(0, 1000),
-        length=(0, 1000),
+        length=(200, 1000),
         angle=(-90, 90),
         x_bounds=(0, st.wheels_width),
         y_bounds=(0, st.wheels_height)
@@ -39,8 +40,14 @@ positions = []
 
 old_lines = []
 
-frame_wait = 30
+frame_wait = 10
 frame_counter = 0
+
+last_time = time.time()
+target_angle = 87.5
+pid_flag = True
+
+pid = PID(kp=0.0005, ki=0.0, kd=0.0)
 
 while True:
     key = cv2.waitKey(1) & 0xFF
@@ -94,8 +101,28 @@ while True:
     cv2.putText(result, f'angle: {angle}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     cv2.putText(result, f'position: {position}', (20, st.wheels_height-80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     
+    now = time.time()
+    dt = now - last_time
+    if dt>1:
+        if angle is not None:
+            if pid_flag:
+                current_angle = angle
+                
+
+                rotation_speed = pid.compute(target_angle, current_angle, dt)
+                rotation_speed = round(max(min(rotation_speed, 0.45), -0.45), 4)
+                print(rotation_speed)
+
+                if abs(target_angle - current_angle) < 0.5:
+                    print('pid done')
+                    pid_flag = False
+                
+                last_time = now
+
     if result is not None:
         cv2.imshow(f'result', result)
     old_lines = []
+
+
 
     cv2.imshow('frame', frame)
