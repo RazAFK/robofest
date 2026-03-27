@@ -1,7 +1,7 @@
 #define DRIVER_STEP_TIME 4
 #include <GyverStepper.h>
 
-GStepper<STEPPER2WIRE> stepper(200, 2, 3);
+GStepper<STEPPER2WIRE> stepper(200, 2, 1, 3);
 
 void setup() {
   Serial.begin(9600);
@@ -36,6 +36,7 @@ void loop()
       static bool dir;
       dir = !dir;
       stepper.setTarget(dir ? -200 : 200);
+      delay(1000);
     }
     else {
       Serial.print(NULL);
