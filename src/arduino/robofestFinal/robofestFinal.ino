@@ -385,9 +385,6 @@ void setup()
 
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
-
-    manipulatorRotationServo.setTargetDeg(90);
-    railRotationServo.setTargetDeg(180);
 }
 
 String msg; // буфер для полученных сообщений
@@ -550,6 +547,7 @@ void Manipulator::rotateRail(int degs)
 
 void Manipulator::moveHorizontalRail(int position)
 {
+    kostyl2 = true;
     horizontalRailMotor.setTarget(position);
 }
 
