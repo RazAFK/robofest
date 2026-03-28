@@ -364,7 +364,7 @@ void setup()
 
     horizontalRailMotor.autoPower(true);
     horizontalRailMotor.setRunMode(FOLLOW_POS);
-    // horizontalRailMotor.reverse(true);
+    horizontalRailMotor.reverse(true);
     horizontalRailMotor.setMaxSpeed(800);
     horizontalRailMotor.setAcceleration(800);
 
@@ -386,8 +386,8 @@ void setup()
     MessageHandler::setWheelBase(wheelBase);
     MessageHandler::setManipulator(manipulator);
 
-    // manipulatorRotationServo.setTargetDeg(0);
-    // railRotationServo.setTargetDeg(180);
+    manipulatorRotationServo.setTargetDeg(90);
+    railRotationServo.setTargetDeg(180);
 }
 
 String msg; // буфер для полученных сообщений
@@ -429,13 +429,14 @@ void loop()
     }
     else if (kostyl2 == true)
     {
+        Serial.println("");
         String arg[] = {"moveDone"};
         MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
                                     arg);
         kostyl2 = false;
     }
 
-    verticalRailMotor.stopIfStuck();
+    // verticalRailMotor.stopIfStuck();
 
     if (wheelBase.checkIfStop() == true)
     {
