@@ -67,6 +67,14 @@ class Arduino:
         try: return self.queue.get_nowait()
         except queue.Empty: return None
 
+    def wait_done(self):
+        data = self.get_data()
+        data = data.check_pref(st.Prefixes.move_done) if data is not None else False
+        while not data:
+            data = self.get_data()
+            data = data.check_pref(st.Prefixes.move_done) if data is not None else False
+        time.sleep(0.3)
+
     class Whe:
 
         def __str__(self):
@@ -75,6 +83,8 @@ class Arduino:
         class Commands(StrEnum):
             moveForward = 'moveForward'
             moveBackward = 'moveBackward'
+            moveLeft = 'moveLeft'
+            moveRight = 'moveRight'
             wheelsStop = 'wheelsStop'
             rotateRight = 'rotateRight'
             rotateLeft = 'rotateLeft'
@@ -98,6 +108,26 @@ class Arduino:
 
         def move_backward_distance(self, distance):
             command = self.master.convert_command(self.Commands.moveBackward,
+                st.velocity_front_right,
+                st.velocity_front_left,
+                st.velocity_backward_right,
+                st.velocity_backward_left,
+                distance
+                )
+            self.master.write_com(command)
+
+        def move_right(self, distance):
+            command = self.master.convert_command(self.Commands.moveRight,
+                st.velocity_front_right,
+                st.velocity_front_left,
+                st.velocity_backward_right,
+                st.velocity_backward_left,
+                distance
+                )
+            self.master.write_com(command)
+        
+        def move_left(self, distance):
+            command = self.master.convert_command(self.Commands.moveLeft,
                 st.velocity_front_right,
                 st.velocity_front_left,
                 st.velocity_backward_right,
@@ -155,8 +185,8 @@ class Arduino:
         def __init__(self, master: Arduino):
             self.master = master
 
-        def move_manipulator(self, horizontal_pos, horizontal_deg):
-            command = self.master.convert_command(self.Commands.moveManipulator, horizontal_pos, horizontal_deg)
+        def move_manipulator(self, horizontal_pos, horizontal_deg, manipulator_deg):
+            command = self.master.convert_command(self.Commands.moveManipulator, horizontal_pos, horizontal_deg, manipulator_deg)
             self.master.write_com(command)
 
         def rotate_manipulator(self, degrees):

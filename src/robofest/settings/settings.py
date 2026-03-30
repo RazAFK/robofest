@@ -34,8 +34,8 @@ wheels_height = cap_height
 
 trash_frames = 3
 
-cam_coef_san_pix = 5/147 #santimetrs/pixels
-cam_coef_pix_san = 147/5 #pixels/santimetrs
+cam_coef_san_pix = 10/200 #santimetrs/pixels
+cam_coef_pix_san = 200/10 #pixels/santimetrs
 
 #limits
 
@@ -45,8 +45,8 @@ limit_manipulator_close = 0
 limit_vertical_step = [0, 30]
 limit_horizontal_step = [0, 47]
 
-limit_horizontal_lenght_min = 10.005972601683492 #santimetrs
-limit_horizontal_lenght_max = 99.99689416376313 #santimetrs
+limit_horizontal_lenght_min = 0 #santimetrs
+limit_horizontal_lenght_max = 24 #santimetrs
 limit_horizontal_angle_min = 0 #degrees
 limit_horizontal_angle_max = 270 #degrees
 

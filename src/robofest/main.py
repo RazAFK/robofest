@@ -23,16 +23,47 @@ arduino = Arduino(avaliable_ports[0])
 arduino.arm.rotate_manipulator(90)
 reader = Reader()
 
-arm_cam = Camera(st.arm_id)
+arm_cam = Camera(0)
 wheel_cam = Camera(1)
 frame = wheel_cam.get_frame()
-cv2.imshow('frame', frame)
+cv2.imshow('wheels', frame)
+camera = input('is it wheels camera? Y/n')
+if camera.lower()!='y':
+    wheel_cam, arm_cam = arm_cam, wheel_cam
+start = time.time()
+while time.time()-start<10:
+    frame = wheel_cam.get_frame()
+    result = handl_num(frame, reader)
+    if result is not None:
+        print(f'[INFO] я увидел номер {result[0]} на {result[1]} фоне')
+
+exit()
 
 pid = PID(kp=0.0004, ki=0.000, kd=0.000, admission=0.05)
+levelout_limit = Limits(sizes=(st.wheels_width, st.wheels_height), length=(150, 1000), angle=(0, 90), x_bounds=(0, 0.8))
 
-time.sleep(1)
-limit = Limits(sizes=(st.wheels_width, st.wheels_height), length=(150, 1000), angle=(0, 90), x_bounds=(0, 0.7))
+arduino.arm.rotate_horizontal_rail(90)
+arduino.wait_done()
+arduino.arm.move_horizontal_rail(1200)
+arduino.wait_done()
+arduino.arm.rotate_manipulator(90)
+arduino.wait_done()
+arduino.arm.rotate_grab_servo(120)
+arduino.wait_done()
+arm_cam.trash_frames(5)
+
+# while True:
+#     frame = arm_cam.get_frame()
+#     ret, result = get_center_contour(frame)
+#     if not ret:
+#         continue
+#     if lst.limit_grab_cube.contains_point(Point(result[0][0], result[0][-1])):
+#         break
+#     steps, angle, length = get_step_angle(result[0][0], result[0][-1])
+#     arduino.arm.move_manipulator(steps, angle, if angle)
+    
+
 
 start = time.time()
-levelout_angle(wheel_cam, arduino, 90, limit, pid)
+levelout_angle(wheel_cam, arduino, 90, levelout_limit, pid)
 print(time.time()-start)
