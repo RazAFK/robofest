@@ -19,6 +19,7 @@ import time, cv2
 
 avaliable_ports = get_available_ports()
 arduino = Arduino(avaliable_ports[0])
+print(f'[INFO] ардуино на порту {arduino.port}')
 
 arduino.arm.rotate_manipulator(90)
 reader = Reader()
@@ -26,6 +27,8 @@ reader = Reader()
 arm_cam = Camera(0)
 wheel_cam = Camera(1)
 frame = wheel_cam.get_frame()
+
+print(f'[INFO] всё работает')
 cv2.imshow('wheels', frame)
 camera = input('is it wheels camera? Y/n')
 if camera.lower()!='y':
