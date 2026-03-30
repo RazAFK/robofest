@@ -111,6 +111,10 @@ class WheelMotor : public EncoderMotor {
                      defaultDirection) {}
     void move(float speed, float distance);
     bool checkIfStop();
+
+    float getSpeed() {
+        return motor.getSpeed(MOT_PWM);
+    }
     
 };
 
@@ -446,6 +450,7 @@ void loop() {
 
         Serial.println(msg);
     }
+    Serial.println(backwardLeft.getPosition());
 }
 
 //

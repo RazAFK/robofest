@@ -50,8 +50,8 @@ def levelout_angle(cam: Camera, arduino: Arduino, target_angle: float, limit: Li
         current_angle = get_average_between(old_lines, Params.angle, length=(limit.length_min, limit.length_max), angle=(limit.angle_min, limit.angle_max))
         
         result = drow_lines(frame, old_lines, (0, 0, 255))
-        cv2.putText(result, f'angle: {current_angle}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-        cv2.imshow('res', result)
+        # cv2.putText(result, f'angle: {current_angle}', (20, st.wheels_height-50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        # cv2.imshow('res', result)
 
         now_time = time.time()
         dt = now_time-last_time

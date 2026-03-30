@@ -64,21 +64,21 @@ while True:
             for worker in commands:
                 print(execute_command(worker[0], worker[1], worker[-1]))
 
-            # it = iter(commands)
-            # working_flag = False
-            # worker = next(it)
-            # while True:
-            #     if working_flag:
-            #         data = arduino.get_data()
-            #         if st.Prefixes.move_done in data:
-            #             working_flag = False
-            #         try:
-            #             worker = next(it)
-            #         except:
-            #             break
-            #     if not working_flag:
-            #         execute_command(worker[0], worker[1], worker[-1])
-            #         working_flag = True
+            it = iter(commands)
+            working_flag = False
+            worker = next(it)
+            while True:
+                if working_flag:
+                    data = arduino.get_data()
+                    if data is not None and data.check_pref(st.Prefixes.move_done):
+                        working_flag = False
+                    try:
+                        worker = next(it)
+                    except:
+                        break
+                if not working_flag:
+                    execute_command(worker[0], worker[1], worker[-1])
+                    working_flag = True
             print('[INFO] executing ended')
         print('[INFO] end loaded program')
     command, *args = com.split('#')
