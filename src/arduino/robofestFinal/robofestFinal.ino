@@ -5,6 +5,9 @@
 #include <GyverStepper.h>
 #include <StepperCore.h>
 
+// magn 11
+// red 56.5
+
 // количество аргументов
 #define ARGUMENTS_COUNT 5
 
@@ -50,6 +53,7 @@
 #define ENCODER_MAGNET_COUNT_WHEELS 12       // количество магнитов на энкодере (указывается продавцом)
 #define ENCODER_MAGNET_COUNT_BROKEN_WHEEL 12 // одно колесо поломанное вообще 11.7
 #define REDUCER_WHEELS 27.5                  // передаточное число редуктора
+#define REDUCER_BROKEN_WHEEL 27.5f           //
 #define RADIUS_WHEELS 50.0                   // радиус колеса на моторе
 #define CHARGE_DISTANCE 0.12f                // дистанция для разгона до максимальной скорости
 // опционально обозначить скорости
@@ -314,7 +318,7 @@ WheelMotor forwardRight(ADDRESS_FORWARD_RIGHT,
                         RADIUS_WHEELS,
                         WHEEL_DEFAULT_DIRECTION_FORWARD_RIGHT);
 WheelMotor forwardLeft(ADDRESS_FORWARD_LEFT,
-                       ENCODER_MAGNET_COUNT_BROKEN_WHEEL,
+                       ENCODER_MAGNET_COUNT_WHEELS,
                        REDUCER_WHEELS,
                        RADIUS_WHEELS,
                        WHEEL_DEFAULT_DIRECTION_FORWARD_LEFT);
@@ -324,7 +328,7 @@ WheelMotor backwardRight(ADDRESS_BACKWARD_RIGHT,
                          RADIUS_WHEELS,
                          WHEEL_DEFAULT_DIRECTION_BACKWARD_RIGHT);
 WheelMotor backwardLeft(ADDRESS_BACKWARD_LEFT,
-                        ENCODER_MAGNET_COUNT_WHEELS,
+                        ENCODER_MAGNET_COUNT_BROKEN_WHEEL,
                         REDUCER_WHEELS,
                         RADIUS_WHEELS,
                         WHEEL_DEFAULT_DIRECTION_BACKWARD_LEFT);
@@ -393,6 +397,7 @@ bool kostyl1 = false; // для сервы поворота рейки
 bool kostyl2 = false; // для горизонтальной рейки (шаговый)
 bool kostyl3 = false; // для хватательной сервы
 bool kostyl4 = false; // для вращательной сервы
+bool kostyl5 = false;
 
 void loop()
 {
@@ -431,6 +436,13 @@ void loop()
         MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
                                     arg);
         kostyl2 = false;
+    } 
+
+    if (kostyl5 == true && verticalRailMotor.getStop() == 0) {
+        String arg[] = {"moveDone"};
+        MessageHandler::sendMessage(MessageHandler::prefix::RAIL,
+                                    arg);
+        kostyl5 = false;
     }
 
     // verticalRailMotor.stopIfStuck();
@@ -855,6 +867,7 @@ void MessageHandler::executeCommand(String command, float *arguments)
     else if (command == "moveVerticalRail")
     {
         MessageHandler::manipulator->moveVerticalRail((float)arguments[0], (float)arguments[1]);
+        kostyl5 = true;
     }
     // гетеры манипулятора
     else if (command == "getHorizontalPosition")
